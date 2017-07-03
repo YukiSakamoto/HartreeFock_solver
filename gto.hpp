@@ -68,6 +68,18 @@ struct ContractedGTO {
         norm_factor = norm;
         normalized = true;
     }
+
+    REAL value(REAL x, REAL y, REAL z) {
+        Vector3Real r = Vector3Real(x,y,z);
+        return value(r);
+    }
+    REAL value(Vector3Real r) {
+        REAL acc = 0.;
+        for(int i = 0; i < num_pgtos(); i++) {
+            acc += pgto_list[i].value(r) * coeff_list[i];
+        }
+        return acc * norm_factor;
+    }
     
     int l, m, n;
     REAL x, y, z;   // the cental coordinate of the gaussin.

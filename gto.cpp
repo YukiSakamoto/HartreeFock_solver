@@ -4,18 +4,16 @@
 
 REAL 
 PrimitiveGTO::value(REAL rx, REAL ry, REAL rz) {
-    REAL dx = rx - x;
-    REAL dy = ry - y;
-    REAL dz = rz - z;
-    REAL norm2 = dx*dx + dy*dy + dz*dz;
-    return std::exp(-1 * exponent * norm2) * norm_factor;
+    Vector3Real r(Vector3Real(rx, ry, rz));
+    return value(r);
 }
 
 REAL
 PrimitiveGTO::value(Vector3Real v) {
     Vector3Real d(v - center);
     REAL norm2 = d.squaredNorm();
-    return std::exp(-1 * exponent * norm2) * norm_factor;
+    REAL phase = std::pow(v[0] - center[0], l) * std::pow(v[1] - center[1], m) * std::pow(v[2] - center[2], n);
+    return phase * std::exp(-1 * exponent * norm2) * norm_factor;
 }
 
 void
