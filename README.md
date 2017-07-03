@@ -5,7 +5,7 @@ A simple implementation of Hartree Fock Method (just for my learning!).
 
 The implementation is based on the "Modern Quantum Chemistry" by Szabo and Ostland"
 
-Since the molecular integrals are evaluated by the methods of Taketa, Huzinaga and Oohata, this program could calculated not only the S orbitals, but also, P and D orbitals. 
+Since the molecular integrals are evaluated by the methods of Taketa, Huzinaga and Oohata, this program could calculate not only the S orbitals, but also P and D orbitals (but TOO SLOW!). 
 
 Build and Run
 ------------
@@ -14,8 +14,8 @@ Build and Run
 
 - cmake (build system)
 - boost (boost unit_test_framework is used for the test)
+- gsl   (for special function)
 - Eigen (temlate library for the linear algebra)
-
 
 ### Linux
 
