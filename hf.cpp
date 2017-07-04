@@ -1,29 +1,26 @@
 #include "common.hpp"
-
 #include "math_helper.hpp"
 #include "gto.hpp"
 #include "gto_eval.hpp"
 #include "orbitals.hpp"
 #include "system.hpp"
 
-#include <iostream>
 #include <Eigen/Eigen> 
-#include <Eigen/Core>
+#include <Eigen/Core>   // for Solver
+
+#include <iostream>
 
 MatrixXReal
 symmetric_orthogonalization(const MatrixXReal& S)
 {
+    // Szabo. pp.143 (3.167)
     // Overlap Integral Matrix (S) should be the 
     //  self-adjoint matrix by the definition.
     Eigen::SelfAdjointEigenSolver<MatrixXReal> es(S);
     if (es.info() != Eigen::Success) {  throw;  }
-
-    size_t row = S.rows();
-    size_t col = S.cols();
-    MatrixXReal l_rt = MatrixXReal::Zero(row,col);
-
     VectorXReal l = es.eigenvalues();
     MatrixXReal U = es.eigenvectors();
+    MatrixXReal l_rt = MatrixXReal::Zero(S.rows(), S.cols() );
     
     int len = es.eigenvalues().size();
     for(size_t i = 0; i < len; i++) {
@@ -37,6 +34,9 @@ symmetric_orthogonalization(const MatrixXReal& S)
 MatrixXReal
 canonical_orthogonalization(const MatrixXReal& S) 
 {
+    // Szabo. pp.144 (3.169 - 3.172)
+    // Overlap Integral Matrix (S) should be the 
+    //  self-adjoint matrix by the definition.
     Eigen::SelfAdjointEigenSolver<MatrixXReal> es(S);
     if (es.info() != Eigen::Success) {  throw;  }
 
@@ -124,6 +124,7 @@ initial_guess(const CGTOs& bfs, const System &atoms)
 MatrixXReal
 form_D(const MatrixXReal& C, int n_occ_orbitals)
 {
+    // Szabo. pp. 139 (3.145)
     size_t row = C.rows();
     size_t col = C.cols();
     MatrixXReal D = MatrixXReal::Zero(row, col);
@@ -137,9 +138,27 @@ form_D(const MatrixXReal& C, int n_occ_orbitals)
     return D;
 }
 
+MatrixXReal
+form_D_uhf(const MatrixXReal &C_spin, int n_spin_electron)
+{
+    // Szabo. pp.213 (3.342 and 3.343)
+    size_t row = C_spin.rows();
+    size_t col = C_spin.cols();
+    MatrixXReal D_spin_new = MatrixXReal::Zero(row, col);
+    for(int u = 0; u < row; u++) {
+        for(int v = 0; v < col; v++) {
+            for(int a = 0; a < n_spin_electron; a++) {
+                D_spin_new(u,v) += C_spin(u,a) * C_spin(v,a);
+            }
+        }
+    }
+    return D_spin_new;
+}
+
 REAL
 calculate_E0(const MatrixXReal &D, const MatrixXReal &Hcore, const MatrixXReal &F)
 {
+    // Szabo. pp.150 (3.184): 
     REAL E0 = 0.;
     MatrixXReal H_F = Hcore + F;
     size_t row = H_F.rows();
@@ -154,13 +173,32 @@ calculate_E0(const MatrixXReal &D, const MatrixXReal &Hcore, const MatrixXReal &
 }
 
 REAL
+calculate_E0_uhf(const MatrixXReal &D_alpha, const MatrixXReal &D_beta, const MatrixXReal &Hcore, 
+        const MatrixXReal &F_alpha, const MatrixXReal &F_beta)
+{
+    // Szabo. pp. 215 (Exercise 3.40)
+    REAL E0 = 0.;
+    size_t row = Hcore.rows();
+    size_t col = Hcore.cols();
+    for(size_t u = 0; u < row; u++) {
+        for(size_t v = 0; v < col; v++) {
+            REAL da = D_alpha(v,u);
+            REAL db = D_beta(v,u);
+            E0 += ((da+db) * Hcore(u,v) + da * F_alpha(u,v) + db * F_beta(u,v));
+        }
+    }
+    E0 *= 0.5;
+    return E0;
+}
+
+REAL
 rhf(CGTOs& bfs, System &system)
 {
     int tot_electrons = system.total_electrons();
     int n_occ_orbitals = tot_electrons / 2;
     // Check the System
     {
-        if (system.total_electrons() % 2 != 0 || system.nspin() != 1) {
+        if (system.total_electrons() % 2 != 0 || system.nspin() != 0) {
             std::cerr << 
                 "ERROR: For RHF calculation, the number of electrons must be even, and nspin must be 1" << std::endl;
             throw;
@@ -278,5 +316,165 @@ rhf(CGTOs& bfs, System &system)
     }
     return E_conv;
 }
+
+
+REAL
+uhf(CGTOs& bfs, System &system)
+{
+    int total_electrons = system.total_electrons();
+    int n_spin = system.nspin();
+    int occ_alpha = (total_electrons + n_spin) / 2;
+    int occ_beta  = (total_electrons - n_spin) / 2;
+    std::cout << "alpha: " << occ_alpha << std::endl;
+    std::cout << "beta: " << occ_beta << std::endl;
+    // Check the System
+    {
+       if (occ_alpha - occ_beta != n_spin) {
+           std::cerr << 
+               "ERROR: For RHF calculation, the number of electrons must be even, and nspin must be 1" << std::endl;
+           throw;
+       }
+    }
+
+    std::cout << "************************************************************\n";
+    std::cout << "  Building Matrices... (S, Hcore, init_D)\n";
+    std::cout << "************************************************************\n";
+
+    //==================================================
+    //  Building Integral Matrices
+    //==================================================
+    // 1. Overlap Matrix
+    MatrixXReal S = calculate_S(bfs);
+    std::cout << "Overlap Matrix:\n" << S << std::endl;
+
+    // 2. Orthodiagonalization of S-matrix (|X>)
+    //MatrixXReal X = symmetric_orthogonalization(S);
+    //std::cout << "symmetric_orthogonalization:\n" << X << std::endl;
+    MatrixXReal X = canonical_orthogonalization(S);
+    std::cout << "canonical_orthogonalization:\n" << X << std::endl;
+    // (<X|)   => <X|S|X> equals E(Unit Matrix)
+    MatrixXReal X_adj = X.adjoint();
+
+    // 3. Kinetic Energy Integral Matrix
+    MatrixXReal T = calculate_T(bfs);
+    std::cout << "Kinetic Matrix:\n" << T << std::endl;
+
+    // 4. Nuclear Attraction Integral Matrix
+    MatrixXReal V = calculate_K(bfs, system);
+    std::cout << "V(NuclearAttractionIntegral):\n" << V << std::endl;
+
+    // 5. Hcore Matrix
+    MatrixXReal Hcore = T + V;
+    std::cout << "Hcore = T + V:\n" << Hcore << std::endl;
+
+    // 6. Obtain Initial Density Matrix from Guess
+    MatrixXReal D_alpha = initial_guess(bfs, system);
+    MatrixXReal D_beta  = initial_guess(bfs, system);
+    MatrixXReal D_total = D_alpha + D_beta;
+    std::cout << "D_total(initial guess):\n" << D_total << std::endl;
+    std::cout << "D_alpha(initial guess):\n" << D_alpha << std::endl;
+    std::cout << "D_beta (initial guess):\n" << D_beta  << std::endl;
+
+    // 7. Nuclear Repulsions;
+    REAL NEI = system.nuclear_repulsion();
+    std::cout << "NEI: " << NEI << std::endl;
+
+    std::cout << "************************************************************\n";
+    std::cout << "  Entering the SCF Loop\n";
+    std::cout << "************************************************************\n";
+    const int max_iteration = 20;
+    bool convergence_flag = false;
+    REAL E_conv = 0.;
+    for(size_t i = 0; i < max_iteration; i++) {
+        std::cout << " [Iteration " << i << " ] " << std::endl;
+        std::cout << "D_alpha:\n" << D_alpha << std::endl;
+        std::cout << "D_beta:\n"  << D_beta  << std::endl;
+        std::cout << "D_total:\n" << D_total << std::endl;
+
+        // Calculate the multicenter integrals with D;
+        int dim = bfs.size();
+        MatrixXReal G_alpha = MatrixXReal::Zero(dim, dim);
+        MatrixXReal G_beta  = MatrixXReal::Zero(dim, dim);
+        calculate_G_uhf(bfs, D_alpha, D_beta, G_alpha, G_beta);
+        std::cout << "G_alpha:\n" <<G_alpha << std::endl;
+        std::cout << "G_beta:\n"  <<G_beta  << std::endl;
+
+        // Build current Fock matrix
+        MatrixXReal F_alpha = Hcore + G_alpha;
+        MatrixXReal F_beta  = Hcore + G_beta;
+        std::cout << "F_alpha:\n" << F_alpha << std::endl;
+        std::cout << "F_beta:\n"  << F_beta  << std::endl;
+
+        // Rotating F matrix 
+        //   (F' = <X|F|X>, where <X|S|X> = E)
+        MatrixXReal F_alpha_prim = X_adj * F_alpha * X;
+        MatrixXReal F_beta_prim  = X_adj * F_beta  * X;
+        std::cout << "F_alpha':\n" << F_alpha_prim << std::endl;
+        std::cout << "F_beta':\n"  << F_beta_prim << std::endl;
+
+        // Solve the Fock matrix.
+        Eigen::SelfAdjointEigenSolver<MatrixXReal> es_alpha(F_alpha_prim);
+        Eigen::SelfAdjointEigenSolver<MatrixXReal>  es_beta(F_beta_prim);
+        if (es_alpha.info() != Eigen::Success || es_beta.info() != Eigen::Success) {  throw;  }
+
+        // Energies and New coefficients 
+        VectorXReal e_alpha = es_alpha.eigenvalues();
+        VectorXReal e_beta  = es_beta.eigenvalues();
+        MatrixXReal C_alpha_new_prime = es_alpha.eigenvectors();
+        MatrixXReal C_beta_new_prime  = es_beta.eigenvectors();
+
+        std::cout << "e_alpha: \n" << e_alpha << std::endl;
+        std::cout << "e_beta: \n"  << e_beta << std::endl;
+        std::cout << "C_alpha_new':\n" << C_alpha_new_prime << std::endl;
+        std::cout << "C_beta_new':\n"  << C_beta_new_prime << std::endl;
+
+        MatrixXReal C_alpha_new = X * C_alpha_new_prime;
+        MatrixXReal C_beta_new  = X * C_beta_new_prime;
+        std::cout << "C_alpha_new:\n" << C_alpha_new << std::endl;
+        std::cout << "C_beta_new:\n"  << C_beta_new << std::endl;
+
+        // Calculate the NEW Density matrix ( <C|C> )
+        MatrixXReal D_alpha_new =  form_D_uhf(C_alpha_new, occ_alpha);
+        MatrixXReal D_beta_new  =  form_D_uhf(C_beta_new,  occ_beta);
+        std::cout << "D_alpha_new:\n" << D_alpha_new << std::endl;
+        std::cout << "D_beta_new:\n" << D_beta_new << std::endl;
+
+        // Calculate the Hartree Fock Energy
+        REAL E0 = calculate_E0_uhf(D_alpha, D_beta, Hcore, F_alpha, F_beta);
+        REAL Etot = E0 + NEI;
+
+        // Check the convergence
+        REAL rmsdp_alpha = 0.;    
+        REAL maxdp_alpha = 0.;
+        REAL rmsdp_beta  = 0.;    
+        REAL maxdp_beta  = 0.;
+        rmsdp_alpha = check_scf_convergence(D_alpha_new, D_alpha, &maxdp_alpha);
+        rmsdp_beta = check_scf_convergence(D_beta_new, D_beta, &maxdp_beta);
+
+        int nconv =  5;
+        REAL convergence = std::pow(10.0, -nconv);
+        if (rmsdp_alpha + rmsdp_beta < convergence) {
+            convergence_flag = true;
+        }
+
+        std::cout << "RMSDP: "<< rmsdp_alpha + rmsdp_beta << ", MAXDP: " << maxdp_alpha + maxdp_beta << std::endl;
+        std::cout << "E0: " << E0  << "  Etot: " << Etot << std::endl;
+        std::cout << "============================================================\n";
+
+        if (convergence_flag == true) {
+            std::cout << "CONVERGENCE ACHIEVED\n";
+            E_conv = Etot;
+            break;
+        } else {
+            //D = D * 0.3 + D_new * 0.7;
+            D_alpha = D_alpha_new;
+            D_beta = D_beta_new;
+            std::cout << std::endl;
+        }
+    }
+    return E_conv;
+}
+
+
 
 

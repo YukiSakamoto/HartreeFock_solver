@@ -41,4 +41,5 @@ BOOST_AUTO_TEST_CASE(HeH_R14632_sto3g)
 
     REAL Etot = rhf(bfs, HeH);
     BOOST_CHECK(numerical_check(Etot, -2.86066, 0.0001));
+    BOOST_CHECK(numerical_check(uhf(bfs, HeH), -2.86066, 0.0001));
 }

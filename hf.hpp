@@ -38,3 +38,5 @@ initial_guess(const CGTOs& bfs, const System &atoms);
 REAL
 rhf(CGTOs& bfs, System &system);
 
+REAL
+uhf(CGTOs& bfs, System &system);

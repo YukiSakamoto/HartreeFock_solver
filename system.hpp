@@ -43,7 +43,7 @@ struct Atom {
 
 struct System {
     typedef std::vector<Atom> AtomContainer;
-    System(int charge = 0, int nspin = 1) :
+    System(int charge = 0, int nspin = 0) :
         charge_(charge), nspin_(nspin)
     {;}
     void set_charge(int charge)
