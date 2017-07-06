@@ -90,30 +90,6 @@ calculate_rmsdp(const MatrixXReal &D, const MatrixXReal D_prev)
     return rmsdp;
 }
 
-REAL
-calculate_rmsdp(const MatrixXReal &D_diff)
-{
-    REAL norm2 = D_diff.squaredNorm();
-    size_t n_elements = D_diff.rows() *D_diff.cols();
-    REAL rmsdp( std::sqrt(norm2/n_elements) );
-    return rmsdp;
-}
-
-
-REAL
-calculate_maxdp(const MatrixXReal &D_diff)
-{
-    REAL retval = 0.;
-    size_t rows = D_diff.rows();
-    size_t cols = D_diff.cols();
-    for(size_t i = 0; i < rows; i++) {
-        for(size_t j = 0; j < cols; j++) {
-            retval = std::max(retval, std::abs(D_diff(rows, cols)));
-        }
-    }
-    return retval;
-}
-
 MatrixXReal
 initial_guess(const CGTOs& bfs, const System &atoms)
 {

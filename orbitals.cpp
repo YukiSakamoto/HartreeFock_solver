@@ -73,8 +73,6 @@ calculate_G_uhf(CGTOs &bfs, MatrixXReal& D_alpha, MatrixXReal &D_beta,
         MatrixXReal& G_alpha_out, MatrixXReal& G_beta_out)
 {
     int dim = bfs.size();
-    //MatrixXReal G_alpha = MatrixXReal::Zero(dim, dim);
-    //MatrixXReal G_beta  = MatrixXReal::Zero(dim, dim);
     MatrixXReal D_total = D_alpha + D_beta;
     for(size_t u = 0; u < dim; u++) {
         for(size_t v = 0; v < dim; v++) {
