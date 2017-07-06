@@ -40,7 +40,14 @@ struct ContractedGTO {
     ContractedGTO(
             int l, int m, int n, 
             REAL x, REAL y, REAL z):
-        l(l), m(m), n(n), x(x), y(y), z(z), norm_factor(REAL(0)), center(x,y,z), normalized(false)
+        l(l), m(m), n(n), x(x), y(y), z(z), center(x,y,z), 
+        norm_factor(REAL(0)), normalized(false)
+    {}
+    ContractedGTO(
+            int l, int m, int n, Vector3Real xyz):
+        l(l), m(m), n(n), 
+        x(xyz[0]), y(xyz[1]), z(xyz[2]), center(xyz), 
+        norm_factor(REAL(0.)), normalized(false)
     {}
 
     void add_primitiveGTO(REAL coeff, REAL exponent) {
