@@ -1,6 +1,7 @@
 #pragma once
 
-#include <gsl/gsl_sf_gamma.h>
+#include <boost/math/special_functions/gamma.hpp>
+// #include <gsl/gsl_sf_gamma.h>  
 
 inline
 int factorial(int n)
@@ -48,7 +49,9 @@ boys(REAL n, REAL x) {
     if (x < radius) {
         return 1. / (2.0 * n + 1.0);
     } else {
-        REAL numerator = gsl_sf_gamma_inc_P(n+0.5, x) * gsl_sf_gamma(n+0.5);
+        // XXX At first the GSL was used for the incomplete gamma.
+        // REAL numerator = gsl_sf_gamma_inc_P(n+0.5, x) * gsl_sf_gamma(n+0.5);
+        REAL numerator = boost::math::gamma_p(n+0.5, x) * boost::math::tgamma(n+0.5);
         REAL denominator = 2.0 * std::pow(x, n+0.5);
         return numerator / denominator;
     }
