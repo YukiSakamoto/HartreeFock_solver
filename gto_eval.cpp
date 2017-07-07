@@ -93,16 +93,34 @@ _a_term(int i, int r, int u, int l1, int l2, REAL PA_x, REAL PB_x, REAL CP_x, RE
 static VectorXReal
 _a_term_reorder(int l1, int l2, REAL PA_x, REAL PB_x, REAL CP_x, REAL gamma)
 {
-    VectorXReal a = VectorXReal(1 + l1 + l2);
+    VectorXReal a = VectorXReal::Zero(1 + l1 + l2);
     for (size_t i = 0; i < 1 + l1 + l2; i++) {
         for (size_t r = 0; r < 1 + int(std::floor(i / 2.0)); r++) {
             for(size_t u = 0; u < 1 + int(std::floor((i-2.0*r)/2.0)); u++) {
                 int I = i - 2*r - u;
-                a[I] += _a_term(i, r, u, l1, l2, PA_x, PB_x, CP_x, gamma);
+                a[I] += _a_term(i, r, u, l1, l2, std::abs(PA_x), std::abs(PB_x), std::abs(CP_x), gamma);
             }
         }
     }
     return a;
+}
+
+static VectorXReal
+_g_list(int l1, int l2, const REAL PA_x, const REAL PB_x, const REAL CP_x, REAL gamma)
+{
+    VectorXReal g_list = VectorXReal::Zero(1 + l1 + l2);
+    for(size_t i = 0; i < 1 + l1 + l2; i++) {
+        for(size_t r = 0; r < int(1+std::floor(i/2.0)); r++) {
+            for(size_t u = 0; u < int(1+std::floor((i-2*r)/2)); u++) {
+                size_t I = i - 2*r - u;
+                REAL term1 = std::pow(-1, i) * binomial_prefactor(i, l1, l2, PA_x, PB_x );
+                REAL term2_numerator = std::pow(-1, u) * factorial(i) * std::pow(CP_x, i-2*r-2*u) * std::pow(0.25/gamma, r+u);
+                REAL term2_denominator = factorial(r) * factorial(u) * factorial(i-2*r-2*u);
+                g_list[I] = g_list[I] + term1 * term2_numerator / term2_denominator;
+            }
+        }
+    }
+    return g_list;
 }
 
 REAL
@@ -122,9 +140,12 @@ nuclear_attraction_PGTO(const PrimitiveGTO &lhs, const PrimitiveGTO &rhs, const 
     Vector3Real PB = Rp - rhs.center;
     Vector3Real CP = Rp - atom.center;
 
-    VectorXReal a_x = _a_term_reorder(l1, l2, PA[0], PB[0], CP[0], gamma);
-    VectorXReal a_y = _a_term_reorder(m1, m2, PA[1], PB[1], CP[1], gamma);
-    VectorXReal a_z = _a_term_reorder(n1, n2, PA[2], PB[2], CP[2], gamma);
+    //VectorXReal a_x = _a_term_reorder(l1, l2, PA[0], PB[0], CP[0], gamma);
+    //VectorXReal a_y = _a_term_reorder(m1, m2, PA[1], PB[1], CP[1], gamma);
+    //VectorXReal a_z = _a_term_reorder(n1, n2, PA[2], PB[2], CP[2], gamma);
+    VectorXReal a_x = _g_list(l1, l2, PA[0], PB[0], CP[0], gamma);
+    VectorXReal a_y = _g_list(m1, m2, PA[1], PB[1], CP[1], gamma);
+    VectorXReal a_z = _g_list(n1, n2, PA[2], PB[2], CP[2], gamma);
     REAL s = 0.;
     for(size_t I = 0; I < 1+l1+l2; I++) {
         for(size_t J = 0; J < 1+m1+m2; J++) {
@@ -161,7 +182,8 @@ _c_list(REAL exp1, REAL x1, int l1, REAL exp2, REAL x2, int l2, REAL px,
                         REAL f3_numerator = factorial(i1+i2-2*(r1+r2)) * std::pow(-1., u) * std::pow(qx-px, i1+i2-2*(r1+r2)-2*u);
                         REAL f3_denominator=factorial(u) * factorial(i1+i2-2*(r1+r2)-2*u) * std::pow(delta, i1+i2-2*(r1+r2)-u);
                         int I = i1+i2-2*(r1+r2)-u;
-                        c_list[I] += f1*f2*f3_numerator/f3_denominator;
+                        //c_list[I] += f1*f2*f3_numerator/f3_denominator;
+                        c_list[I] += f1*std::pow(-1., i2)*f2*f3_numerator/f3_denominator;
                     }
                 }
             }
