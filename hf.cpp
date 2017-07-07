@@ -188,23 +188,23 @@ rhf(CGTOs& bfs, System &system)
     //==================================================
     // 1. Overlap Matrix
     MatrixXReal S = calculate_S(bfs);
-    std::cout << "Overlap Matrix:\n" << S << std::endl;
+    std::cout << "**** Overlap Matrix: ****\n" << S << std::endl;
 
     // 2. Orthodiagonalization of S-matrix (|X>)
     //MatrixXReal X = symmetric_orthogonalization(S);
     //std::cout << "symmetric_orthogonalization:\n" << X << std::endl;
     MatrixXReal X = canonical_orthogonalization(S);
-    std::cout << "canonical_orthogonalization:\n" << X << std::endl;
+    std::cout << "**** canonical_orthogonalization: ****\n" << X << std::endl;
     // (<X|)   => <X|S|X> equals E(Unit Matrix)
     MatrixXReal X_adj = X.adjoint();
 
     // 3. Kinetic Energy Integral Matrix
     MatrixXReal T = calculate_T(bfs);
-    std::cout << "Kinetic Matrix:\n" << T << std::endl;
+    std::cout << "**** Kinetic Matrix: ****\n" << T << std::endl;
 
     // 4. Nuclear Attraction Integral Matrix
     MatrixXReal V = calculate_K(bfs, system);
-    std::cout << "V(NuclearAttractionIntegral):\n" << V << std::endl;
+    std::cout << "**** V(Nuclear Attraction): ****\n" << V << std::endl;
 
     // 5. Hcore Matrix
     MatrixXReal Hcore = T + V;
@@ -287,12 +287,10 @@ rhf(CGTOs& bfs, System &system)
         } else {
             //D = D * 0.3 + D_new * 0.7;
             D = D_new;
-            std::cout << std::endl;
         }
     }
     return E_conv;
 }
-
 
 REAL
 uhf(CGTOs& bfs, System &system)
@@ -321,27 +319,27 @@ uhf(CGTOs& bfs, System &system)
     //==================================================
     // 1. Overlap Matrix
     MatrixXReal S = calculate_S(bfs);
-    std::cout << "Overlap Matrix:\n" << S << std::endl;
+    std::cout << "**** Overlap Matrix: ****\n" << S << std::endl;
 
     // 2. Orthodiagonalization of S-matrix (|X>)
     //MatrixXReal X = symmetric_orthogonalization(S);
     //std::cout << "symmetric_orthogonalization:\n" << X << std::endl;
     MatrixXReal X = canonical_orthogonalization(S);
-    std::cout << "canonical_orthogonalization:\n" << X << std::endl;
+    std::cout << "**** canonical_orthogonalization: ****\n" << X << std::endl;
     // (<X|)   => <X|S|X> equals E(Unit Matrix)
     MatrixXReal X_adj = X.adjoint();
 
     // 3. Kinetic Energy Integral Matrix
     MatrixXReal T = calculate_T(bfs);
-    std::cout << "Kinetic Matrix:\n" << T << std::endl;
+    std::cout << "**** Kinetic Matrix: ****\n" << T << std::endl;
 
     // 4. Nuclear Attraction Integral Matrix
     MatrixXReal V = calculate_K(bfs, system);
-    std::cout << "V(NuclearAttractionIntegral):\n" << V << std::endl;
+    std::cout << "**** V(Nuclear Attraction): ****\n" << V << std::endl;
 
     // 5. Hcore Matrix
     MatrixXReal Hcore = T + V;
-    std::cout << "Hcore = T + V:\n" << Hcore << std::endl;
+    std::cout << "**** Hcore = T + V: ****\n" << Hcore << std::endl;
 
     // 6. Obtain Initial Density Matrix from Guess
     MatrixXReal D_alpha = initial_guess(bfs, system);
@@ -353,7 +351,7 @@ uhf(CGTOs& bfs, System &system)
 
     // 7. Nuclear Repulsions;
     REAL NEI = system.nuclear_repulsion();
-    std::cout << "NEI: " << NEI << std::endl;
+    std::cout << "**** Energy from Nuclear Repulsion: " << NEI << std::endl;
 
     std::cout << "************************************************************\n";
     std::cout << "  Entering the SCF Loop\n";

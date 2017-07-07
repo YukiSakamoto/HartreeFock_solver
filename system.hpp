@@ -72,7 +72,8 @@ struct System {
     Atom& operator[](size_t idx) {
         return atom_list_[idx];
     }
-    size_t size(void) {
+    size_t size(void) const
+    {
         return atom_list_.size();
     }
     void add_atom(int atomic_number, REAL x, REAL y, REAL z) {
