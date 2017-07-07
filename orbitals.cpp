@@ -3,6 +3,50 @@
 #include "gto_eval.hpp"
 #include "orbitals.hpp"
 
+
+void
+CGTOs::add_orbitals(const int l, const Vector3Real center, 
+        const std::vector<REAL> &exponent_list, const std::vector<REAL> &coefficient_list)
+{
+    const int max_angular = 1;  // P-orbitals
+    if (l < 0) {
+        std::cerr << "The value of l (angular momentum) must be ZERO or POSITIVE." << std::endl;
+        throw;
+    }
+    if (max_angular < l) {
+        std::cerr << "The angular momentum " << l << " is not supported" << std::endl;
+    }
+    if (exponent_list.size() != coefficient_list.size() ) {
+        std::cerr << "The length of exponent_list and coefficient_list always must be the same." <<std::endl;
+        throw;
+    }
+    std::cout << "add_orbitals: Error check passed\n";
+    size_t contraction = exponent_list.size();
+    std::vector<ContractedGTO> v;
+    switch (l) {
+        case 0: // s orbital
+            v.push_back( ContractedGTO(0, 0, 0, center) );
+            break;
+        case 1:
+            v.push_back( ContractedGTO(1, 0, 0, center) );  // px
+            v.push_back( ContractedGTO(0, 1, 0, center) );  // py
+            v.push_back( ContractedGTO(0, 0, 1, center) );  // pz
+            break;
+        default:
+            // Never get here
+            throw;
+            break;
+    }
+    for(size_t i = 0; i < v.size() ; i++) {
+        for(size_t j = 0; j < contraction; j++) {
+            v[i].add_primitiveGTO(coefficient_list[j], exponent_list[j]);
+        }
+        v[i].normalize();
+        this->cgtos_.push_back(v[i]);
+    }
+    return;
+}
+
 MatrixXReal
 calculate_S(CGTOs &cgtos)
 {

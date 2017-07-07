@@ -28,6 +28,10 @@ struct CGTOs {
     CGTO_container::iterator end() {
         return cgtos_.end();
     }
+
+    void add_orbitals( const int l, const Vector3Real center, 
+        const std::vector<REAL> &exponent_list, const std::vector<REAL> &coefficient_list);
+
     
     CGTO_container cgtos_;
 };
