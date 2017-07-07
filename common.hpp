@@ -10,7 +10,7 @@ typedef Eigen::MatrixXd MatrixXReal;
 
 // Constant Values
 static const REAL factor_Bohr2Angstrom = 0.529177249;
-static const REAL factor_Angstrom2Bohr = 1./factor_Bohr2Angstrom;
+static const REAL factor_Angstrom2Bohr = 1.8897259885789;
 
 inline REAL
 Bohr2Angstrom(REAL x)
@@ -24,14 +24,22 @@ Bohr2Angstrom(Vector3Real r)
     return r * factor_Bohr2Angstrom;
 }
 
+
 inline REAL
 Angstrom2Bohr(REAL x)
 {
-    return x/factor_Bohr2Angstrom;
+    return x * factor_Angstrom2Bohr;
 }
 
 inline Vector3Real
 Angstrom2Bohr(Vector3Real r)
 {
-    return r / factor_Bohr2Angstrom;
+    return r * factor_Angstrom2Bohr;
+}
+
+inline Vector3Real
+Angstrom2Bohr(REAL x, REAL y, REAL z)
+{
+    Vector3Real r = Vector3Real(x,y,z);
+    return r * factor_Angstrom2Bohr;
 }

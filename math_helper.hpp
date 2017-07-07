@@ -29,17 +29,17 @@ int binomial(int n, int m) {
     return factorial(n) / factorial(m) / factorial(n-m);
 }
 
-inline
-REAL binomial_prefactor(int exponent, int pow1, int pow2, REAL x1, REAL x2)
+inline REAL
+binomial_prefactor(int exponent, int pow1, int pow2, REAL x1, REAL x2)
 {
-    REAL s = 0;
-    for(int i = 0; i < (1 + exponent); i++) {
+    REAL sum = 0.;
+    for(int i = 0; i <= exponent; i++) {
         int j = exponent - i;
         if (i <= pow1 && j <= pow2) {
-            s += binomial(pow1, i) * std::pow(x1, pow1 - i) * binomial(pow2, j) * std::pow(x2, pow2 - j);
+            sum += binomial(pow1, i) * binomial(pow2, j) * std::pow(x1, pow1-i) * std::pow(x2, pow2-j);
         }
     }
-    return s;
+    return sum;
 }
 
 inline REAL 
