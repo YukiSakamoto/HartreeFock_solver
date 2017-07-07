@@ -7,3 +7,6 @@ add_executable(run_rhf main.cpp)
 target_link_libraries(run_rhf
 	hf_solver
 )
+
+add_executable(ch4 ch4.cpp)
+target_link_libraries(ch4 hf_solver)
