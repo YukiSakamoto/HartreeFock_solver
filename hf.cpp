@@ -168,7 +168,7 @@ calculate_E0_uhf(const MatrixXReal &D_alpha, const MatrixXReal &D_beta, const Ma
 }
 
 REAL
-rhf(CGTOs& bfs, System &system)
+rhf(const CGTOs& bfs, const System &system)
 {
     int tot_electrons = system.total_electrons();
     int n_occ_orbitals = tot_electrons / 2;
@@ -293,7 +293,7 @@ rhf(CGTOs& bfs, System &system)
 }
 
 REAL
-uhf(CGTOs& bfs, System &system)
+uhf(const CGTOs& bfs, const System &system)
 {
     int total_electrons = system.total_electrons();
     int n_spin = system.nspin();

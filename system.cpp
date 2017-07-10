@@ -6,7 +6,7 @@ void System::generate_basis()
 }
 
 REAL 
-System::nuclear_repulsion()
+System::nuclear_repulsion() const
 {
     REAL t = 0.;
     for(size_t i = 0; i < this->size(); i++) {

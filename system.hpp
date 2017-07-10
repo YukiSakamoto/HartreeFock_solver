@@ -54,11 +54,11 @@ struct System {
     {
         nspin_ = nspin;
     }
-    int nspin(void)
+    int nspin(void) const 
     {
         return nspin_;
     }
-    int total_electrons(void)
+    int total_electrons(void) const 
     {
         int tot_e = 0;
         for(size_t i = 0; i < atom_list_.size(); i++) {
@@ -92,7 +92,7 @@ struct System {
         atom_list_.push_back(atom);
     }
     void generate_basis();
-    REAL nuclear_repulsion();
+    REAL nuclear_repulsion() const;
     std::vector<Atom> atom_list_;
     int charge_;
     int nspin_;
