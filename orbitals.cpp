@@ -48,7 +48,7 @@ CGTOs::add_orbitals(const int l, const Vector3Real center,
 }
 
 MatrixXReal
-calculate_S(CGTOs &cgtos)
+calculate_S(const CGTOs &cgtos)
 {
     size_t len = cgtos.size();
     MatrixXReal S = MatrixXReal::Zero(len, len);
@@ -61,7 +61,7 @@ calculate_S(CGTOs &cgtos)
 }
 
 MatrixXReal
-calculate_T(CGTOs &cgtos)
+calculate_T(const CGTOs &cgtos)
 {
     size_t len = cgtos.size();
     MatrixXReal T = MatrixXReal::Zero(len, len);
@@ -74,7 +74,7 @@ calculate_T(CGTOs &cgtos)
 }
 
 MatrixXReal
-calculate_K(CGTOs &bfs, System &atoms)
+calculate_K(const CGTOs &bfs, const System &atoms)
 {
     size_t len = bfs.size();
     MatrixXReal T = MatrixXReal::Zero(len, len);
@@ -91,7 +91,7 @@ calculate_K(CGTOs &bfs, System &atoms)
 }
 
 MatrixXReal
-calculate_G(CGTOs &bfs, MatrixXReal& D)
+calculate_G(const CGTOs &bfs, const MatrixXReal& D)
 {
     int dim = bfs.size();
     // TODO Optimize and reduce the loop
@@ -113,7 +113,7 @@ calculate_G(CGTOs &bfs, MatrixXReal& D)
 }   
 
 void
-calculate_G_uhf(CGTOs &bfs, MatrixXReal& D_alpha, MatrixXReal &D_beta, 
+calculate_G_uhf(const CGTOs &bfs, const MatrixXReal& D_alpha, const MatrixXReal &D_beta, 
         MatrixXReal& G_alpha_out, MatrixXReal& G_beta_out)
 {
     int dim = bfs.size();

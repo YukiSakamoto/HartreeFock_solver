@@ -9,6 +9,9 @@
 struct CGTOs {
     typedef std::vector<ContractedGTO> CGTO_container;
 
+    const ContractedGTO& operator[](size_t idx) const {
+        return cgtos_[idx];
+    }
     ContractedGTO& operator[](size_t idx) {
         return cgtos_[idx];
     }
@@ -38,20 +41,20 @@ struct CGTOs {
 
 
 MatrixXReal
-calculate_S(CGTOs &cgtos);
+calculate_S(const CGTOs &cgtos);
 
 MatrixXReal
-calculate_T(CGTOs &cgtos);
+calculate_T(const CGTOs &cgtos);
 
 // Nuclear Attraction Integral
 MatrixXReal
-calculate_K(CGTOs &cgtos, System &atoms);
+calculate_K(const CGTOs &cgtos, const System &atoms);
 
 // two-electron integral
 MatrixXReal
-calculate_G(CGTOs &bfs, MatrixXReal& D);
+calculate_G(const CGTOs &bfs, const MatrixXReal& D);
 
 // two-electron integral for UFH
 void
-calculate_G_uhf(CGTOs &bfs, MatrixXReal& D_alpha, MatrixXReal &D_beta, 
+calculate_G_uhf(const CGTOs &bfs, const MatrixXReal& D_alpha, const MatrixXReal &D_beta, 
         MatrixXReal& G_alpha_out, MatrixXReal& G_beta_out);

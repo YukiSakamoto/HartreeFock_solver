@@ -72,6 +72,9 @@ struct System {
     Atom& operator[](size_t idx) {
         return atom_list_[idx];
     }
+    const Atom& operator[](size_t idx) const {
+        return atom_list_[idx];
+    }
     size_t size(void) const
     {
         return atom_list_.size();
