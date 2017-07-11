@@ -49,6 +49,13 @@ struct ContractedGTO {
         x(xyz[0]), y(xyz[1]), z(xyz[2]), center(xyz), 
         norm_factor(REAL(0.)), normalized(false)
     {}
+    ContractedGTO(
+            Vector3Int &angular, Vector3Real &xyz):
+        l(angular[0]), m(angular[1]), n(angular[2]), 
+        x(xyz[0]), y(xyz[1]), z(xyz[2]), center(xyz),
+        norm_factor(REAL(0.)), normalized(false)
+    {}
+
 
     void add_primitiveGTO(REAL coeff, REAL exponent) {
         PrimitiveGTO pgto_new(exponent, l, m, n, x, y, z);

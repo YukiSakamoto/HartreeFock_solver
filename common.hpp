@@ -8,6 +8,9 @@ typedef Eigen::Vector3d Vector3Real;
 typedef Eigen::Vector2d Vector2Real;
 typedef Eigen::MatrixXd MatrixXReal;
 
+// For the vector of magnetic quantum number
+typedef Eigen::Vector3i Vector3Int;
+
 // Constant Values
 static const REAL factor_Bohr2Angstrom = 0.529177249;
 static const REAL factor_Angstrom2Bohr = 1.8897259885789;
