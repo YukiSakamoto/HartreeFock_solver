@@ -4,6 +4,7 @@
 #include "gto_eval.hpp"
 #include "orbitals.hpp"
 #include "system.hpp"
+#include "default.hpp"
 
 #include <Eigen/Eigen> 
 #include <Eigen/Core>   // for Solver
@@ -269,9 +270,9 @@ rhf(const CGTOs& bfs, const System &system)
         REAL rmsdp = 0.;    
         REAL maxdp = 0.;
         rmsdp = check_scf_convergence(D_new, D, &maxdp);
-        int nconv =  5;
-        REAL convergence = std::pow(10.0, -nconv);
-        if (rmsdp < convergence) {
+        REAL convergence = std::pow(10.0, -NConvergence);
+        REAL maxdp_convergence = std::pow(10.0, -NConvergence+2);
+        if (rmsdp < convergence && maxdp < maxdp_convergence) {
             convergence_flag = true;
         }
 
@@ -425,9 +426,9 @@ uhf(const CGTOs& bfs, const System &system)
         rmsdp_alpha = check_scf_convergence(D_alpha_new, D_alpha, &maxdp_alpha);
         rmsdp_beta = check_scf_convergence(D_beta_new, D_beta, &maxdp_beta);
 
-        int nconv =  5;
-        REAL convergence = std::pow(10.0, -nconv);
-        if (rmsdp_alpha + rmsdp_beta < convergence) {
+        REAL convergence = std::pow(10.0, -NConvergence);
+        REAL maxdp_convergence = std::pow(10.0, -NConvergence+2);
+        if (rmsdp_alpha + rmsdp_beta < convergence && maxdp_alpha + maxdp_beta < maxdp_convergence) {
             convergence_flag = true;
         }
 
