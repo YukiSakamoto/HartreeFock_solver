@@ -3,6 +3,8 @@
 #include <cmath>
 #include "Eigen/Core"
 #include "common.hpp"
+#include "system.hpp"
+#include "orbitals.hpp"
 #include <cstdio>
 #include <string>
 #include <vector>
@@ -35,6 +37,15 @@ REAL f_n(size_t n, REAL u)
 // Becke 1988 (eq. 21)
 REAL s_n(size_t n, REAL u)
 {   return (1./2.) * (1-f_n(n,u));    }
+
+REAL weight(const Vector3Real &pos, const Vector3Real &atom_pos, const Vector3Real &another_atom_pos)
+{
+    REAL Rij = (atom_pos - another_atom_pos).norm();
+    REAL lambda1   = (pos- atom_pos).norm();
+    REAL lambda2   = (pos- another_atom_pos).norm();
+    REAL u = (lambda1 - lambda2)/Rij;
+    return s_n(3, u);
+}
 
 // Becke 1988 (eq. 25)
 REAL coordinate_map(REAL x, const REAL Rmax)
@@ -97,10 +108,16 @@ struct GridPoint {
 struct AtomicGrid {
     std::vector<GridPoint> grid_points;
     Vector3Real pos;
+    AtomicGrid(const Vector3Real &pos) :pos(pos)
+    {}
     
     void push_back(const GridPoint& gp) {
         this->grid_points.push_back(gp);
     }
+    void append(const GridPoint& gp) {
+        this->grid_points.push_back(gp);
+    }
+
     REAL integrate() const 
     {
         REAL sum = 0.;
@@ -110,12 +127,15 @@ struct AtomicGrid {
         }
         return sum;
     }
+    size_t size() const 
+    {   return grid_points.size();  }
 };
 
-//AtomicGrid
-void
+AtomicGrid
 GenerateAtomicGrid(const Vector3Real &atom_pos, REAL Rmax, int nrad = 70, int nang = 194) 
 {
+    AtomicGrid atomic_grid(atom_pos);
+
     // 1.  determine the radial quadrature point
     VectorXReal x_quadpoints = Chebyshev2ndRoots(nrad);
     VectorXReal x_weights    = Chebyshev2ndWeights(nrad);
@@ -125,75 +145,102 @@ GenerateAtomicGrid(const Vector3Real &atom_pos, REAL Rmax, int nrad = 70, int na
     VectorXReal r_quadpoints = coordinate_map(x_quadpoints, Rmax);
 
     for(int i = 0; i < nrad; i++) {
+        REAL x = x_quadpoints[i];
         REAL r = r_quadpoints[i];
         // Generate Spherical Grid
-        Vector3Real lebedev_point = Vector3Real(lebedev_grid_194[i].x, lebedev_grid_194[i].y, lebedev_grid_194[i].z);
-        REAL lebedev_weight = lebedev_grid_194[i].weight;
-        REAL weight = 4*M_PI*r*r * lebedev_weight;
-        GridPoint(atom_pos + lebedev_point * r);
-    }
+        for(int j = 0; j < nang; j++) {
+            Vector3Real lebedev_point = Vector3Real(lebedev_grid_194[j].x, lebedev_grid_194[j].y, lebedev_grid_194[j].z);
+            REAL lebedev_weight = lebedev_grid_194[j].weight;
 
-    // memorize
-}
+            REAL weight = 4*M_PI*r*r * lebedev_weight;
+            REAL dr = Rmax*2*x/std::pow(1-x,2);   // <= dr/dx 
+            GridPoint gp(atom_pos + lebedev_point*r);
 
-
-REAL f(REAL x, REAL y, REAL z) 
-{
-    // Vexact = 
-    return 1. + x + std::pow(y,2) + std::pow(x,2)*y + std::pow(x,4) + std::pow(y,5) + std::pow(x*y*z, 2);
-}
-
-REAL SphereVolume(REAL R)
-{
-    REAL s = 0.;
-    REAL Sexact = 4.*M_PI*R*R*R/3.;
-    REAL dr = 0.00001;
-    for(REAL radius = 0.; radius <= R; radius += dr) {
-        REAL S_r = 4*M_PI*radius*radius;
-        for(int i = 0; i < sizeof(lebedev_grid_194)/sizeof(lebedev_grid); i++) {
-            REAL weight = lebedev_grid_194[i].weight;
-            s += S_r * weight * dr;
+            atomic_grid.append(gp);
         }
     }
-    std::printf("Quadrature: %.8f, Vexact: %.8f\n", s, Sexact);
-    return s;
+    return atomic_grid;
 }
 
-REAL g(REAL x)
+void 
+GenerateGrid(const System &system)
 {
-    return 4./(10+x*x);
+    std::vector<AtomicGrid> grid;
+    size_t natoms = system.size();
+    for(int i = 0; i < natoms; i++) {
+        grid.push_back( GenerateAtomicGrid(system[i].center, 0.) );
+    }
+    // Becke's weight scheme
+    // TODO
+    for(int i = 0; i < natoms; i++) {
+        for(int grid_index = 0; grid_index < grid[i].size(); grid_index++) {
+            for(int j = 0; j < natoms; j++) {
+                if (i == j) {   continue;   }
+                REAL wi = weight(grid[grid_index].pos, system[i].center, system[j].center);
+            }
+        }
+    }
+    return;
 }
 
-int main(void)
-{
-    // integrate 0->1: r^2
-    //REAL s = 0.;
-    //REAL S = 4*M_PI;
-    //for(int i = 0; i < sizeof(lebedev_grid_194)/sizeof(lebedev_grid); i++) {
-    //    Vector3Real r = Vector3Real(lebedev_grid_194[i].x, lebedev_grid_194[i].y, lebedev_grid_194[i].z);
-    //    REAL weight = lebedev_grid_194[i].weight;
-    //    s += f(r[0], r[1], r[2]) * weight * S;
-    //}
-    //REAL Vexact = 216*M_PI/35.;
-    //std::printf("Vexact: %.8f,  Vquadrature:  %.8f\n", Vexact, s);
-    //
-    int nrad = 40;
-    REAL s = 0;
-    VectorXReal xquadpoints = Chebyshev2ndRoots(nrad);
-    VectorXReal xweights    = Chebyshev2ndWeights(nrad);
-    
-    for(int i = 0; i < xquadpoints.size(); i++) {
-        std::printf("x%02d: %12.8f\tw%02d: %12.8f\n", i, xquadpoints[i], i, xweights[i]);
-        s += g(xquadpoints[i]) * xweights[i];
-    }
-    std::printf("Chevyshev Quadrature of g(x): %.8f\n", s);
-    //SphereVolume(2.0);
-    int n = 10000;
-    REAL dx = 2./n;
-    s = 0.;
-    for(REAL x = -1.; x <= 1.;  x += dx) {
-        s += g(x)*dx;
-    }
-    std::printf("Sum of g(x)dx (dx = %.8f) : %.8f\n", dx, s);
-    return 0;
-}
+
+//REAL f(REAL x, REAL y, REAL z) 
+//{
+//    // Vexact = 
+//    return 1. + x + std::pow(y,2) + std::pow(x,2)*y + std::pow(x,4) + std::pow(y,5) + std::pow(x*y*z, 2);
+//}
+//
+//REAL SphereVolume(REAL R)
+//{
+//    REAL s = 0.;
+//    REAL Sexact = 4.*M_PI*R*R*R/3.;
+//    REAL dr = 0.00001;
+//    for(REAL radius = 0.; radius <= R; radius += dr) {
+//        REAL S_r = 4*M_PI*radius*radius;
+//        for(int i = 0; i < sizeof(lebedev_grid_194)/sizeof(lebedev_grid); i++) {
+//            REAL weight = lebedev_grid_194[i].weight;
+//            s += S_r * weight * dr;
+//        }
+//    }
+//    std::printf("Quadrature: %.8f, Vexact: %.8f\n", s, Sexact);
+//    return s;
+//}
+//
+//REAL g(REAL x)
+//{
+//    return 4./(10+x*x);
+//}
+//
+//int main(void)
+//{
+//    // integrate 0->1: r^2
+//    //REAL s = 0.;
+//    //REAL S = 4*M_PI;
+//    //for(int i = 0; i < sizeof(lebedev_grid_194)/sizeof(lebedev_grid); i++) {
+//    //    Vector3Real r = Vector3Real(lebedev_grid_194[i].x, lebedev_grid_194[i].y, lebedev_grid_194[i].z);
+//    //    REAL weight = lebedev_grid_194[i].weight;
+//    //    s += f(r[0], r[1], r[2]) * weight * S;
+//    //}
+//    //REAL Vexact = 216*M_PI/35.;
+//    //std::printf("Vexact: %.8f,  Vquadrature:  %.8f\n", Vexact, s);
+//    //
+//    int nrad = 40;
+//    REAL s = 0;
+//    VectorXReal xquadpoints = Chebyshev2ndRoots(nrad);
+//    VectorXReal xweights    = Chebyshev2ndWeights(nrad);
+//    
+//    for(int i = 0; i < xquadpoints.size(); i++) {
+//        std::printf("x%02d: %12.8f\tw%02d: %12.8f\n", i, xquadpoints[i], i, xweights[i]);
+//        s += g(xquadpoints[i]) * xweights[i];
+//    }
+//    std::printf("Chevyshev Quadrature of g(x): %.8f\n", s);
+//    //SphereVolume(2.0);
+//    int n = 10000;
+//    REAL dx = 2./n;
+//    s = 0.;
+//    for(REAL x = -1.; x <= 1.;  x += dx) {
+//        s += g(x)*dx;
+//    }
+//    std::printf("Sum of g(x)dx (dx = %.8f) : %.8f\n", dx, s);
+//    return 0;
+//}
