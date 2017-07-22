@@ -8,4 +8,7 @@ struct lebedev_grid {
 };
 
 
-
+struct radial_grid {
+    double x;
+    double weight;
+};
