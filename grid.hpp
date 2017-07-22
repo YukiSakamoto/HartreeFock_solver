@@ -15,7 +15,7 @@ struct GridPoint {
     GridPoint(const Vector3Real &x, REAL weight = 1.): pos(x), weight1(weight), weight2(1.)
     {}
 
-    REAL weight1;
+    REAL weight1;   // vol * levedev_weight * polynomial-weight
     REAL weight2;   // Becke scheme
     Vector3Real pos;
     REAL radial_;
