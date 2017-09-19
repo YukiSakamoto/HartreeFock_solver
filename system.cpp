@@ -1,10 +1,5 @@
 #include "system.hpp"
 
-void System::generate_basis()
-{
-
-}
-
 REAL 
 System::nuclear_repulsion() const
 {

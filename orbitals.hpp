@@ -34,11 +34,12 @@ struct CGTOs {
 
     void add_orbitals( const int l, const Vector3Real center, 
         const std::vector<REAL> &exponent_list, const std::vector<REAL> &coefficient_list);
-
     
     CGTO_container cgtos_;
 };
 
+struct CGTOs
+generate_bfs(const System &system, const std::string &basisset_filename);
 
 MatrixXReal
 calculate_S(const CGTOs &cgtos);

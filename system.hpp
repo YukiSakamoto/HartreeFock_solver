@@ -91,7 +91,6 @@ struct System {
     void push_back(const Atom &atom) {
         atom_list_.push_back(atom);
     }
-    void generate_basis();
     REAL nuclear_repulsion() const;
     std::vector<Atom> atom_list_;
     int charge_;

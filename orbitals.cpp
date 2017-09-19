@@ -2,6 +2,25 @@
 #include "gto.hpp"
 #include "gto_eval.hpp"
 #include "orbitals.hpp"
+#include "basis_set.hpp"
+
+struct CGTOs
+generate_bfs(const System &system, const std::string &basisset_filename)
+{
+    CGTOs bfs;
+    std::vector<Atom>::const_iterator it = system.atom_list_.begin();
+    struct BasisSet dat( parse_basisset_file(basisset_filename) );
+    for(; it != system.atom_list_.end(); it++) {
+        struct AtomBasis atom_basis = dat.get(it->atomic_number);
+        for(int i_shell = 0; i_shell < atom_basis.orbitals.size(); i_shell++) {
+            int l = angular_momentum(atom_basis.orbitals[i_shell].type);
+            bfs.add_orbitals(l, it->center, 
+                    atom_basis.orbitals[i_shell].exponents,
+                    atom_basis.orbitals[i_shell].coeffs);
+        }
+    }
+    return bfs;
+}
 
 
 void
