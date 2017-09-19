@@ -25,25 +25,7 @@ HeH(REAL r12)
     HeH.add_atom(He);
     HeH.set_charge(+1);
 
-    //==================================================
-    //  Prepare the Basis Functions
-    //==================================================
-    CGTOs bfs;
-
-    ContractedGTO he1s(0, 0, 0, r12, 0., 0.);
-    he1s.add_primitiveGTO(0.444635, 0.480844);
-    he1s.add_primitiveGTO(0.535328, 1.776691);
-    he1s.add_primitiveGTO(0.154329, 9.753934);
-    he1s.normalize();
-    bfs.push_back(he1s);
-
-    ContractedGTO h1s(0, 0, 0, 0., 0., 0.);
-    h1s.add_primitiveGTO(0.444635, 0.168856);
-    h1s.add_primitiveGTO(0.535328, 0.623913);
-    h1s.add_primitiveGTO(0.154329, 3.42525);
-    h1s.normalize();
-    bfs.push_back(h1s);
-
+    CGTOs bfs = generate_bfs(HeH, "p631G.dat");
     rhf(bfs, HeH);
     return 0.;
 }
@@ -51,29 +33,13 @@ HeH(REAL r12)
 REAL 
 H2(REAL r12)
 {
-    CGTOs bfs;
-
-    ContractedGTO h1(0, 0, 0, 0., 0., 0.);
-    h1.add_primitiveGTO(0.444635, 0.168856);
-    h1.add_primitiveGTO(0.535328, 0.623913);
-    h1.add_primitiveGTO(0.154329, 3.42525);
-    h1.normalize();
-
-    ContractedGTO h2( 0, 0, 0, r12, 0., 0.);
-    h2.add_primitiveGTO(0.444635, 0.168856);
-    h2.add_primitiveGTO(0.535328, 0.623913);
-    h2.add_primitiveGTO(0.154329, 3.42525);
-    h2.normalize();
-
-    bfs.push_back(h1);
-    bfs.push_back(h2);
-
     System H2_molecule;
     Atom H1(1, 0. , 0., 0.);
     Atom H2(1, r12, 0., 0.);
     H2_molecule.add_atom(H1);
     H2_molecule.add_atom(H2);
 
+    CGTOs bfs = generate_bfs(H2_molecule, "sto3g.dat");
     rhf(bfs, H2_molecule);
     return 0.;
 }
@@ -85,14 +51,7 @@ He(REAL /*ignored*/)
     System He_;
     He_.add_atom(He_atom);
 
-    CGTOs bfs;
-
-    ContractedGTO he1s(0, 0, 0, 0., 0., 0.);
-    he1s.add_primitiveGTO(0.444635, 0.480844);
-    he1s.add_primitiveGTO(0.535328, 1.776691);
-    he1s.add_primitiveGTO(0.154329, 9.753934);
-    he1s.normalize();
-    bfs.push_back(he1s);
+    CGTOs bfs = generate_bfs(He_, "sto3g.dat");
     rhf(bfs, He_);
 
     return 0.;
