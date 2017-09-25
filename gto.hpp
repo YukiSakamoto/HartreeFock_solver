@@ -16,7 +16,7 @@ struct PrimitiveGTO {
     PrimitiveGTO(REAL exponent, 
             int l, int m, int n, 
             REAL x, REAL y, REAL z):
-        exponent(exponent), l(l), m(m), n(n), x(x), y(y), z(z), norm_factor(REAL(0)), center(x,y,z)
+        l(l), m(m), n(n), exponent(exponent), x(x), y(y), z(z), center(x,y,z), norm_factor(REAL(0))
     {
         normalize();
     }
@@ -89,7 +89,7 @@ struct ContractedGTO {
     }
     REAL value(Vector3Real r) {
         REAL acc = 0.;
-        for(int i = 0; i < num_pgtos(); i++) {
+        for(size_t i = 0; i < num_pgtos(); i++) {
             acc += pgto_list[i].value(r) * coeff_list[i];
         }
         return acc * norm_factor;

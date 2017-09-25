@@ -13,7 +13,7 @@ _overlap1D(
     REAL center_x = (exponent1 * x1 + exponent2 * x2) / gamma;
     REAL Ra = center_x - x1;
     REAL Rb = center_x - x2;
-    for(size_t i = 0; i < (1 + int(std::floor((l1+l2) / 2))); i++) {
+    for(int i = 0; i < (1 + int(std::floor((l1+l2) / 2))); i++) {
         s += binomial_prefactor(2 * i, l1, l2, Ra, Rb) * factorial2(2*i-1) / std::pow(2.0*gamma, i);
     }
     return s;
@@ -30,9 +30,6 @@ _overlap3D(
         std::cout << __LINE__ << std::endl;
         throw;
     }
-    Vector3Real Rp = (exponent1 * center1 + exponent2 * center2) / gamma;
-    Vector3Real Ra = Rp - center1;
-    Vector3Real Rb = Rp - center2;
     REAL prefactor = std::pow(M_PI/gamma, 1.5) * std::exp(-exponent1 * exponent2 * dist2 / gamma);
     if (prefactor == REAL(0.)) {
         std::cout << __LINE__ << std::endl;
@@ -43,7 +40,6 @@ _overlap3D(
     REAL sy = _overlap1D(exponent1, center1[1], m1, exponent2, center2[1], m2);
     REAL sz = _overlap1D(exponent1, center1[2], n1, exponent2, center2[2], n2);
     REAL ret = prefactor * sx * sy * sz;
-
     return ret;
 }
 
@@ -81,37 +77,13 @@ kinetic_PGTO(const PrimitiveGTO &lhs, const PrimitiveGTO &rhs) {
     return (term1 + term2 + term3) * lhs.norm_factor * rhs.norm_factor;
 }
 
-static REAL
-_a_term(int i, int r, int u, int l1, int l2, REAL PA_x, REAL PB_x, REAL CP_x, REAL gamma)
-{
-    REAL pre = std::pow(-1., i) * binomial_prefactor(i, l1, l2, PA_x, PB_x);
-    REAL numerator = std::pow(-1., u) * factorial(i) * std::pow(CP_x, i-2*r - 2*u) * std::pow(0.25*gamma, r+u);
-    REAL denominator = factorial(r) * factorial(u) * factorial(i - 2*r - 2*u);
-    return pre * numerator / denominator;
-}
-
-static VectorXReal
-_a_term_reorder(int l1, int l2, REAL PA_x, REAL PB_x, REAL CP_x, REAL gamma)
-{
-    VectorXReal a = VectorXReal::Zero(1 + l1 + l2);
-    for (size_t i = 0; i < 1 + l1 + l2; i++) {
-        for (size_t r = 0; r < 1 + int(std::floor(i / 2.0)); r++) {
-            for(size_t u = 0; u < 1 + int(std::floor((i-2.0*r)/2.0)); u++) {
-                int I = i - 2*r - u;
-                a[I] += _a_term(i, r, u, l1, l2, std::abs(PA_x), std::abs(PB_x), std::abs(CP_x), gamma);
-            }
-        }
-    }
-    return a;
-}
-
 static VectorXReal
 _g_list(int l1, int l2, const REAL PA_x, const REAL PB_x, const REAL CP_x, REAL gamma)
 {
     VectorXReal g_list = VectorXReal::Zero(1 + l1 + l2);
-    for(size_t i = 0; i < 1 + l1 + l2; i++) {
-        for(size_t r = 0; r < int(1+std::floor(i/2.0)); r++) {
-            for(size_t u = 0; u < int(1+std::floor((i-2*r)/2)); u++) {
+    for(int i = 0; i < 1 + l1 + l2; i++) {
+        for(int r = 0; r < int(1+std::floor(i/2.0)); r++) {
+            for(int u = 0; u < int(1+std::floor((i-2*r)/2)); u++) {
                 size_t I = i - 2*r - u;
                 REAL term1 = std::pow(-1, i) * binomial_prefactor(i, l1, l2, PA_x, PB_x );
                 REAL term2_numerator = std::pow(-1, u) * factorial(i) * std::pow(CP_x, i-2*r-2*u) * std::pow(0.25/gamma, r+u);
@@ -140,16 +112,13 @@ nuclear_attraction_PGTO(const PrimitiveGTO &lhs, const PrimitiveGTO &rhs, const 
     Vector3Real PB = Rp - rhs.center;
     Vector3Real CP = Rp - atom.center;
 
-    //VectorXReal a_x = _a_term_reorder(l1, l2, PA[0], PB[0], CP[0], gamma);
-    //VectorXReal a_y = _a_term_reorder(m1, m2, PA[1], PB[1], CP[1], gamma);
-    //VectorXReal a_z = _a_term_reorder(n1, n2, PA[2], PB[2], CP[2], gamma);
     VectorXReal a_x = _g_list(l1, l2, PA[0], PB[0], CP[0], gamma);
     VectorXReal a_y = _g_list(m1, m2, PA[1], PB[1], CP[1], gamma);
     VectorXReal a_z = _g_list(n1, n2, PA[2], PB[2], CP[2], gamma);
     REAL s = 0.;
-    for(size_t I = 0; I < 1+l1+l2; I++) {
-        for(size_t J = 0; J < 1+m1+m2; J++) {
-            for(size_t K = 0; K < 1+n1+n2; K++) {
+    for(int I = 0; I < 1+l1+l2; I++) {
+        for(int J = 0; J < 1+m1+m2; J++) {
+            for(int K = 0; K < 1+n1+n2; K++) {
                 s += a_x[I] * a_y[J] * a_z[K] * boys(I+J+K, gamma*pc2);
             }
         }
