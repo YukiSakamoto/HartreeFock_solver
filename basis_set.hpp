@@ -61,11 +61,13 @@ struct BasisSet {
         this->container.push_back(b);
     }
     const struct AtomBasis &get(int atomic_number) {
-        for(int i = 0; i < container.size(); i++) {
+        for(size_t i = 0; i < container.size(); i++) {
             if (container[i].atomic_number == atomic_number) {
                 return container[i];
             }
         }
+        // Never get here
+        throw;
     }
 };
 

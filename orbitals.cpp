@@ -12,7 +12,7 @@ generate_bfs(const System &system, const std::string &basisset_filename)
     struct BasisSet dat( parse_basisset_file(basisset_filename) );
     for(; it != system.atom_list_.end(); it++) {
         struct AtomBasis atom_basis = dat.get(it->atomic_number);
-        for(int i_shell = 0; i_shell < atom_basis.orbitals.size(); i_shell++) {
+        for(size_t i_shell = 0; i_shell < atom_basis.orbitals.size(); i_shell++) {
             int l = angular_momentum(atom_basis.orbitals[i_shell].type);
             bfs.add_orbitals(l, it->center, 
                     atom_basis.orbitals[i_shell].exponents,
@@ -112,7 +112,7 @@ calculate_K(const CGTOs &bfs, const System &atoms)
 MatrixXReal
 calculate_G(const CGTOs &bfs, const MatrixXReal& D)
 {
-    int dim = bfs.size();
+    size_t dim = bfs.size();
     // TODO Optimize and reduce the loop
     MatrixXReal G = MatrixXReal::Zero(dim, dim);
     for(size_t u = 0; u < dim; u++) {
@@ -135,7 +135,7 @@ void
 calculate_G_uhf(const CGTOs &bfs, const MatrixXReal& D_alpha, const MatrixXReal &D_beta, 
         MatrixXReal& G_alpha_out, MatrixXReal& G_beta_out)
 {
-    int dim = bfs.size();
+    size_t dim = bfs.size();
     MatrixXReal D_total = D_alpha + D_beta;
     for(size_t u = 0; u < dim; u++) {
         for(size_t v = 0; v < dim; v++) {

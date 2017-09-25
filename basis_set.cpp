@@ -71,16 +71,16 @@ parse_basisset_file(const std::string &filename)
 
             std::string &L = a[0];
             int n_contraction = boost::lexical_cast<int>(a[1]);
-            REAL scaling_parameter = boost::lexical_cast<REAL>(a[2]);
+            //REAL scaling_parameter = boost::lexical_cast<REAL>(a[2]);
 
             transform (L.begin (), L.end (), L.begin (), toupper);
-            int deg_count = 0;
+            size_t n_shell_types = 0;
             for(std::string::iterator it = L.begin(); it != L.end(); it++) {
-                char s = *it;
-                if (s == 'S' || s == 'P' || s == 'D' || s == 'F') {
-                    struct Shell new_orbital(s);
+                char l = *it;
+                if (l == 'S' || l == 'P' || l == 'D' || l == 'F') {
+                    struct Shell new_orbital(l);
                     new_atom.orbitals.push_back(new_orbital);
-                    deg_count++;
+                    n_shell_types++;
                 } else {
                     throw;
                 }
@@ -90,9 +90,9 @@ parse_basisset_file(const std::string &filename)
                 std::getline(ifs, line_buf);
                 std::vector<std::string> b = split_by_space(line_buf);
                 REAL exp = boost::lexical_cast<REAL>(b[0]);
-                if (b.size() != deg_count + 1) {throw;}
+                if (b.size() != n_shell_types + 1) {throw;}
 
-                for(int idx = 1; idx < b.size(); idx++) {
+                for(size_t idx = 1; idx < b.size(); idx++) {
                     REAL coeff = boost::lexical_cast<REAL>(b[idx]);
                     new_atom.orbitals[parse_done + idx - 1].exponents.push_back(exp);
                     new_atom.orbitals[parse_done + idx - 1].coeffs.push_back(coeff);

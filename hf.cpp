@@ -23,7 +23,7 @@ symmetric_orthogonalization(const MatrixXReal& S)
     MatrixXReal U = es.eigenvectors();
     MatrixXReal l_rt = MatrixXReal::Zero(S.rows(), S.cols() );
     
-    int len = es.eigenvalues().size();
+    size_t len = es.eigenvalues().size();
     for(size_t i = 0; i < len; i++) {
         l_rt(i,i) = 1./std::sqrt(l[i]);
     }
@@ -66,10 +66,10 @@ check_scf_convergence(const MatrixXReal& D, const MatrixXReal& D_prev, REAL *max
     REAL maxdp_acc = 0.;
     REAL rmsdp_acc = 0.;
 
-    int row = D_diff.rows();
-    int col = D_diff.cols();
-    for(size_t i = 0; i < D_diff.rows(); i++) {
-        for(size_t j = 0; j < D_diff.cols(); j++) {
+    size_t row = D_diff.rows();
+    size_t col = D_diff.cols();
+    for(size_t i = 0; i < row; i++) {
+        for(size_t j = 0; j < col; j++) {
             rmsdp_acc += std::pow(D_diff(i,j), 2);
             maxdp_acc = std::max(maxdp_acc, std::abs(D_diff(i,j)) );
         }
@@ -92,22 +92,22 @@ calculate_rmsdp(const MatrixXReal &D, const MatrixXReal D_prev)
 }
 
 MatrixXReal
-initial_guess(const CGTOs& bfs, const System &atoms)
+initial_guess(const CGTOs& bfs, const System /*&atoms*/)
 {
     // XXX For Now, Returns the ZERO Maxrix
     return MatrixXReal::Zero(bfs.size(), bfs.size());
 }
 
 MatrixXReal
-form_D(const MatrixXReal& C, int n_occ_orbitals)
+form_D(const MatrixXReal& C, size_t n_occ_orbitals)
 {
     // Szabo. pp. 139 (3.145)
     size_t row = C.rows();
     size_t col = C.cols();
     MatrixXReal D = MatrixXReal::Zero(row, col);
-    for(int u = 0 ; u < row; u++) {
-        for(int v = 0; v < col; v++) {
-            for(int a = 0 ; a < n_occ_orbitals; a++) {
+    for(size_t u = 0 ; u < row; u++) {
+        for(size_t v = 0; v < col; v++) {
+            for(size_t a = 0 ; a < n_occ_orbitals; a++) {
                 D(u,v) += 2.0 * C(u,a) * C(v,a);
             }
         }
@@ -116,15 +116,15 @@ form_D(const MatrixXReal& C, int n_occ_orbitals)
 }
 
 MatrixXReal
-form_D_uhf(const MatrixXReal &C_spin, int n_spin_electron)
+form_D_uhf(const MatrixXReal &C_spin, size_t n_spin_electron)
 {
     // Szabo. pp.213 (3.342 and 3.343)
     size_t row = C_spin.rows();
     size_t col = C_spin.cols();
     MatrixXReal D_spin_new = MatrixXReal::Zero(row, col);
-    for(int u = 0; u < row; u++) {
-        for(int v = 0; v < col; v++) {
-            for(int a = 0; a < n_spin_electron; a++) {
+    for(size_t u = 0; u < row; u++) {
+        for(size_t v = 0; v < col; v++) {
+            for(size_t a = 0; a < n_spin_electron; a++) {
                 D_spin_new(u,v) += C_spin(u,a) * C_spin(v,a);
             }
         }
