@@ -1,4 +1,4 @@
-
+#include "common.hpp"
 #include "gto.hpp"
 #include "gto_eval.hpp"
 #include "orbitals.hpp"
@@ -12,6 +12,7 @@ generate_bfs(const System &system, const std::string &basisset_filename)
     struct BasisSet dat( parse_basisset_file(basisset_filename) );
     for(; it != system.atom_list_.end(); it++) {
         struct AtomBasis atom_basis = dat.get(it->atomic_number);
+        std::cout << atom_basis.to_str() << std::endl;
         for(size_t i_shell = 0; i_shell < atom_basis.orbitals.size(); i_shell++) {
             int l = angular_momentum(atom_basis.orbitals[i_shell].type);
             bfs.add_orbitals(l, it->center, 
@@ -27,19 +28,17 @@ void
 CGTOs::add_orbitals(const int l, const Vector3Real center, 
         const std::vector<REAL> &exponent_list, const std::vector<REAL> &coefficient_list)
 {
-    const int max_angular = 1;  // P-orbitals
     if (l < 0) {
         std::cerr << "The value of l (angular momentum) must be ZERO or POSITIVE." << std::endl;
         throw;
     }
-    if (max_angular < l) {
+    if (MAX_L < l) {
         std::cerr << "The angular momentum " << l << " is not supported" << std::endl;
     }
     if (exponent_list.size() != coefficient_list.size() ) {
         std::cerr << "The length of exponent_list and coefficient_list always must be the same." <<std::endl;
         throw;
     }
-    std::cout << "add_orbitals: Error check passed\n";
     size_t contraction = exponent_list.size();
     std::vector<ContractedGTO> v;
     switch (l) {
@@ -50,6 +49,14 @@ CGTOs::add_orbitals(const int l, const Vector3Real center,
             v.push_back( ContractedGTO(1, 0, 0, center) );  // px
             v.push_back( ContractedGTO(0, 1, 0, center) );  // py
             v.push_back( ContractedGTO(0, 0, 1, center) );  // pz
+            break;
+        case 2:
+            v.push_back( ContractedGTO(2, 0, 0, center) );  // dx2
+            v.push_back( ContractedGTO(0, 2, 0, center) );  // dy2
+            v.push_back( ContractedGTO(0, 0, 2, center) );  // dz2
+            v.push_back( ContractedGTO(1, 1, 0, center) );  // dxy
+            v.push_back( ContractedGTO(0, 1, 1, center) );  // dyz
+            v.push_back( ContractedGTO(1, 0, 1, center) );  // dzx
             break;
         default:
             // Never get here
@@ -117,6 +124,7 @@ calculate_G(const CGTOs &bfs, const MatrixXReal& D)
     MatrixXReal G = MatrixXReal::Zero(dim, dim);
     for(size_t u = 0; u < dim; u++) {
         for(size_t v = 0; v < dim; v++) {
+            if (u < v) { continue;  }
             REAL temp = 0.;
             for(size_t p = 0; p < dim; p++) {
                 for(size_t q = 0; q < dim; q++) {
@@ -126,6 +134,7 @@ calculate_G(const CGTOs &bfs, const MatrixXReal& D)
                 }
             }
             G(u,v) = temp;
+            G(v,u) = temp;
         }
     }
     return G;

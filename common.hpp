@@ -11,6 +11,8 @@ typedef Eigen::MatrixXd MatrixXReal;
 // For the vector of magnetic quantum number
 typedef Eigen::Vector3i Vector3Int;
 
+// Maximum Angular Momentum
+const int MAX_L = 2;    
 // 
 const std::string Elements[] = {
     "0", 
