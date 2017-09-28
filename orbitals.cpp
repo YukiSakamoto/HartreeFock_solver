@@ -122,8 +122,7 @@ calculate_G(const CGTOs &bfs, const MatrixXReal& D, MatrixXReal &G_out)
     size_t dim = bfs.size();
     // TODO Optimize and reduce the loop
     for(size_t u = 0; u < dim; u++) {
-        for(size_t v = 0; v < dim; v++) {
-            if (u < v) { continue;  }
+        for(size_t v = u; v < dim; v++) {
             REAL temp = 0.;
             for(size_t p = 0; p < dim; p++) {
                 for(size_t q = 0; q < dim; q++) {
@@ -133,7 +132,9 @@ calculate_G(const CGTOs &bfs, const MatrixXReal& D, MatrixXReal &G_out)
                 }
             }
             G_out(u,v) = temp;
-            G_out(v,u) = temp;
+            if (u != v) {
+                G_out(v,u) = temp;
+            }
         }
     }
 }   
@@ -157,9 +158,9 @@ calculate_G_uhf(const CGTOs &bfs, const MatrixXReal& D_alpha, const MatrixXReal 
                 }
             }
             G_alpha_out(u,v) = temp_alpha;
-            G_alpha_out(v,u) = temp_alpha;
+            G_beta_out(u,v)  = temp_beta;
             if (u != v) {
-                G_beta_out(u,v)  = temp_beta;
+                G_alpha_out(v,u) = temp_alpha;
                 G_beta_out(v,u)  = temp_beta;
             }
         }
