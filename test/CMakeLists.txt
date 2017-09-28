@@ -1,5 +1,5 @@
 set(TEST_NAMES
-	boys_func_test integral_test test_hydrogen test_HeHplus)
+	boys_func_test integral_test test_hydrogen test_HeHplus  test_ch4)
 
 set(test_library_dependencies)
 find_library(BOOST_UNITTEST_FRAMEWORK_LIBRARY boost_unit_test_framework)
