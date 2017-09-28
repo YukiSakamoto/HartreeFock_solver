@@ -52,8 +52,8 @@ MatrixXReal
 calculate_K(const CGTOs &cgtos, const System &atoms);
 
 // two-electron integral
-MatrixXReal
-calculate_G(const CGTOs &bfs, const MatrixXReal& D);
+void
+calculate_G(const CGTOs &bfs, const MatrixXReal& D, MatrixXReal &G_out);
 
 // two-electron integral for UFH
 void

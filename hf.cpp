@@ -9,6 +9,8 @@
 #include <Eigen/Eigen> 
 #include <Eigen/Core>   // for Solver
 
+#include <boost/format.hpp>
+
 #include <iostream>
 
 MatrixXReal
@@ -173,6 +175,7 @@ rhf(const CGTOs& bfs, const System &system)
 {
     int tot_electrons = system.total_electrons();
     int n_occ_orbitals = tot_electrons / 2;
+    int dim = bfs.size();
     // Check the System
     {
         if (system.total_electrons() % 2 != 0 || system.nspin() != 0) {
@@ -233,7 +236,8 @@ rhf(const CGTOs& bfs, const System &system)
         std::cout << "D:\n" << D << std::endl;
 
         // Calculate the multicenter integrals with D;
-        MatrixXReal G = calculate_G(bfs, D);
+        MatrixXReal G = MatrixXReal::Zero(dim, dim);
+        calculate_G(bfs, D, G);
         std::cout << "G:\n" <<G << std::endl;
 
         // Build current Fock matrix
@@ -278,7 +282,8 @@ rhf(const CGTOs& bfs, const System &system)
 
         // Output current cycle
         std::cout << "RMSDP: "<< rmsdp << ", MAXDP: " << maxdp << std::endl;
-        std::cout << "E0: " << E0  << "  Etot: " << Etot << std::endl;
+        //std::cout << "E0: " << E0  << "  Etot: " << Etot << std::endl;
+        std::cout << boost::format("E0 : %15.10f   Etot: %15.10f\n") % E0 % Etot;
         std::cout << "============================================================\n";
 
         if (convergence_flag == true) {
@@ -364,7 +369,7 @@ uhf(const CGTOs& bfs, const System &system)
         std::cout << " [Iteration " << i << " ] " << std::endl;
         std::cout << "D_alpha:\n" << D_alpha << std::endl;
         std::cout << "D_beta:\n"  << D_beta  << std::endl;
-        std::cout << "D_total:\n" << D_total << std::endl;
+        std::cout << "D_total:\n" << D_alpha + D_beta << std::endl;
 
         // Calculate the multicenter integrals with D;
         int dim = bfs.size();
@@ -433,7 +438,8 @@ uhf(const CGTOs& bfs, const System &system)
         }
 
         std::cout << "RMSDP: "<< rmsdp_alpha + rmsdp_beta << ", MAXDP: " << maxdp_alpha + maxdp_beta << std::endl;
-        std::cout << "E0: " << E0  << "  Etot: " << Etot << std::endl;
+        //std::cout << "E0: " << E0  << "  Etot: " << Etot << std::endl;
+        std::cout << boost::format("E0 : %15.10f   Etot: %15.10f\n") % E0 % Etot;
         std::cout << "============================================================\n";
 
         if (convergence_flag == true) {

@@ -116,12 +116,11 @@ calculate_K(const CGTOs &bfs, const System &atoms)
     return T;
 }
 
-MatrixXReal
-calculate_G(const CGTOs &bfs, const MatrixXReal& D)
+void
+calculate_G(const CGTOs &bfs, const MatrixXReal& D, MatrixXReal &G_out)
 {
     size_t dim = bfs.size();
     // TODO Optimize and reduce the loop
-    MatrixXReal G = MatrixXReal::Zero(dim, dim);
     for(size_t u = 0; u < dim; u++) {
         for(size_t v = 0; v < dim; v++) {
             if (u < v) { continue;  }
@@ -133,11 +132,10 @@ calculate_G(const CGTOs &bfs, const MatrixXReal& D)
                     temp += D(p,q) * (doubleJ - k);
                 }
             }
-            G(u,v) = temp;
-            G(v,u) = temp;
+            G_out(u,v) = temp;
+            G_out(v,u) = temp;
         }
     }
-    return G;
 }   
 
 void
@@ -147,7 +145,7 @@ calculate_G_uhf(const CGTOs &bfs, const MatrixXReal& D_alpha, const MatrixXReal 
     size_t dim = bfs.size();
     MatrixXReal D_total = D_alpha + D_beta;
     for(size_t u = 0; u < dim; u++) {
-        for(size_t v = 0; v < dim; v++) {
+        for(size_t v = u; v < dim; v++) {
             REAL temp_alpha = 0.;
             REAL temp_beta  = 0.;
             for(size_t p = 0; p < dim; p++) {
@@ -159,7 +157,11 @@ calculate_G_uhf(const CGTOs &bfs, const MatrixXReal& D_alpha, const MatrixXReal 
                 }
             }
             G_alpha_out(u,v) = temp_alpha;
-            G_beta_out(u,v)  = temp_beta;
+            G_alpha_out(v,u) = temp_alpha;
+            if (u != v) {
+                G_beta_out(u,v)  = temp_beta;
+                G_beta_out(v,u)  = temp_beta;
+            }
         }
     }
     return;

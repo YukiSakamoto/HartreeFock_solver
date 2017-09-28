@@ -39,6 +39,12 @@ parse_basisset_file(const std::string &filename)
     std::ifstream ifs(filename.c_str() ,std::ios::in);
     std::string line_buf;
     struct BasisSet retval(filename);
+
+    if(!ifs.is_open())
+    {
+        std::cerr << "Error! maybe the file doesn't exist." << std::endl;
+        throw;
+    }
     
     // Ignore the comments and find first line of basis ste data;
     while(! ifs.eof() ) {
