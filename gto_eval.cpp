@@ -1,7 +1,11 @@
+#include "common.hpp"
 #include "gto.hpp"
 #include "gto_eval.hpp"
 #include "system.hpp"
 #include <cmath>
+
+#include <algorithm>
+#include <boost/array.hpp>
 
 static REAL 
 _overlap1D(
@@ -77,10 +81,12 @@ kinetic_PGTO(const PrimitiveGTO &lhs, const PrimitiveGTO &rhs) {
     return (term1 + term2 + term3) * lhs.norm_factor * rhs.norm_factor;
 }
 
-static VectorXReal
-_g_list(int l1, int l2, const REAL PA_x, const REAL PB_x, const REAL CP_x, REAL gamma)
+typedef boost::array<REAL, 2 * MAX_L + 1> g_list_array;
+
+static void
+_g_list(int l1, int l2, const REAL PA_x, const REAL PB_x, const REAL CP_x, REAL gamma, g_list_array &g_list_out)
 {
-    VectorXReal g_list = VectorXReal::Zero(1 + l1 + l2);
+    std::fill(g_list_out.begin(), g_list_out.end(), 0.);
     for(int i = 0; i < 1 + l1 + l2; i++) {
         for(int r = 0; r < int(1+std::floor(i/2.0)); r++) {
             for(int u = 0; u < int(1+std::floor((i-2*r)/2)); u++) {
@@ -88,11 +94,10 @@ _g_list(int l1, int l2, const REAL PA_x, const REAL PB_x, const REAL CP_x, REAL 
                 REAL term1 = std::pow(-1, i) * binomial_prefactor(i, l1, l2, PA_x, PB_x );
                 REAL term2_numerator = std::pow(-1, u) * factorial(i) * std::pow(CP_x, i-2*r-2*u) * std::pow(0.25/gamma, r+u);
                 REAL term2_denominator = factorial(r) * factorial(u) * factorial(i-2*r-2*u);
-                g_list[I] = g_list[I] + term1 * term2_numerator / term2_denominator;
+                g_list_out[I] = g_list_out[I] + term1 * term2_numerator / term2_denominator;
             }
         }
     }
-    return g_list;
 }
 
 REAL
@@ -112,9 +117,10 @@ nuclear_attraction_PGTO(const PrimitiveGTO &lhs, const PrimitiveGTO &rhs, const 
     Vector3Real PB = Rp - rhs.center;
     Vector3Real CP = Rp - atom.center;
 
-    VectorXReal a_x = _g_list(l1, l2, PA[0], PB[0], CP[0], gamma);
-    VectorXReal a_y = _g_list(m1, m2, PA[1], PB[1], CP[1], gamma);
-    VectorXReal a_z = _g_list(n1, n2, PA[2], PB[2], CP[2], gamma);
+    g_list_array a_x, a_y, a_z;
+    _g_list(l1, l2, PA[0], PB[0], CP[0], gamma, a_x);
+    _g_list(m1, m2, PA[1], PB[1], CP[1], gamma, a_y);
+    _g_list(n1, n2, PA[2], PB[2], CP[2], gamma, a_z);
     REAL s = 0.;
     for(int I = 0; I < 1+l1+l2; I++) {
         for(int J = 0; J < 1+m1+m2; J++) {
@@ -127,11 +133,14 @@ nuclear_attraction_PGTO(const PrimitiveGTO &lhs, const PrimitiveGTO &rhs, const 
     return s;
 }
 
+typedef boost::array<REAL, 4*MAX_L + 1> c_list_array;
+
 // Returns the C[I] in the paper pp.2320.
-static VectorXReal
+static void
 _c_list(REAL exp1, REAL x1, int l1, REAL exp2, REAL x2, int l2, REAL px,
-    REAL exp3, REAL x3, int l3, REAL exp4, REAL x4, int l4, REAL qx)
+    REAL exp3, REAL x3, int l3, REAL exp4, REAL x4, int l4, REAL qx, c_list_array &c_list_out)
 {
+    std::fill(c_list_out.begin(), c_list_out.end(), 0.);
     //std::cout << " l1: " << l1 << " l2: " << l2 << " l3: " << l3 << " l4: " << l4 << std::endl;
     REAL pa = px - x1;
     REAL pb = px - x2;
@@ -140,7 +149,6 @@ _c_list(REAL exp1, REAL x1, int l1, REAL exp2, REAL x2, int l2, REAL px,
     REAL gamma1 = exp1 + exp2;
     REAL gamma2 = exp3 + exp4;
     REAL delta = 0.25*(1./gamma1 + 1./gamma2);
-    VectorXReal c_list = VectorXReal::Zero(l1 + l2 + l3 + l4 + 1);
     for(int i1 = 0; i1 < l1 + l2 + 1; i1++) {
         for(int i2 = 0; i2 < l3 + l4 + 1; i2++) {
             for(int r1 = 0; r1 < int(std::floor(i1/2.)) + 1; r1++) {
@@ -152,13 +160,13 @@ _c_list(REAL exp1, REAL x1, int l1, REAL exp2, REAL x2, int l2, REAL px,
                         REAL f3_denominator=factorial(u) * factorial(i1+i2-2*(r1+r2)-2*u) * std::pow(delta, i1+i2-2*(r1+r2)-u);
                         int I = i1+i2-2*(r1+r2)-u;
                         //c_list[I] += f1*f2*f3_numerator/f3_denominator;
-                        c_list[I] += f1*std::pow(-1., i2)*f2*f3_numerator/f3_denominator;
+                        c_list_out[I] += f1*std::pow(-1., i2)*f2*f3_numerator/f3_denominator;
                     }
                 }
             }
         }
     }
-    return c_list;
+    return;
 }
 
 REAL
@@ -175,12 +183,13 @@ electron_reulsion_PGTO(const PrimitiveGTO& pgto1, const PrimitiveGTO &pgto2, con
 
     REAL delta = (1./gamma1 + 1./gamma2) / 4.;
     REAL s(0.);
-    VectorXReal c_list_x = _c_list(pgto1.exponent, pgto1.center[0], pgto1.l, pgto2.exponent, pgto2.center[0], pgto2.l, p[0], 
-            pgto3.exponent, pgto3.center[0], pgto3.l, pgto4.exponent, pgto4.center[0], pgto4.l, q[0] );
-    VectorXReal c_list_y = _c_list(pgto1.exponent, pgto1.center[1], pgto1.m, pgto2.exponent, pgto2.center[1], pgto2.m, p[1], 
-            pgto3.exponent, pgto3.center[1], pgto3.m, pgto4.exponent, pgto4.center[1], pgto4.m, q[1] );
-    VectorXReal c_list_z = _c_list(pgto1.exponent, pgto1.center[2], pgto1.n, pgto2.exponent, pgto2.center[2], pgto2.n, p[2], 
-            pgto3.exponent, pgto3.center[2], pgto3.n, pgto4.exponent, pgto4.center[2], pgto4.n, q[2] );
+    c_list_array c_list_x, c_list_y, c_list_z;
+    _c_list(pgto1.exponent, pgto1.center[0], pgto1.l, pgto2.exponent, pgto2.center[0], pgto2.l, p[0], 
+            pgto3.exponent, pgto3.center[0], pgto3.l, pgto4.exponent, pgto4.center[0], pgto4.l, q[0], c_list_x );
+    _c_list(pgto1.exponent, pgto1.center[1], pgto1.m, pgto2.exponent, pgto2.center[1], pgto2.m, p[1], 
+            pgto3.exponent, pgto3.center[1], pgto3.m, pgto4.exponent, pgto4.center[1], pgto4.m, q[1], c_list_y );
+    _c_list(pgto1.exponent, pgto1.center[2], pgto1.n, pgto2.exponent, pgto2.center[2], pgto2.n, p[2], 
+            pgto3.exponent, pgto3.center[2], pgto3.n, pgto4.exponent, pgto4.center[2], pgto4.n, q[2], c_list_z );
 
     for(int I = 0; I < 1 + pgto1.l + pgto2.l + pgto3.l + pgto4.l; I++) {
         for(int J = 0; J < 1 + pgto1.m + pgto2.m + pgto3.m + pgto4.m; J++) {
@@ -189,9 +198,6 @@ electron_reulsion_PGTO(const PrimitiveGTO& pgto1, const PrimitiveGTO &pgto2, con
             }
         }
     }
-    //std::cout << "x:" << c_list_x  << std::endl;
-    //std::cout << "y:" << c_list_y  << std::endl;
-    //std::cout << "z:" << c_list_z  << std::endl;
     s *= 2.0*std::pow(M_PI, 2.5)/ (gamma1 * gamma2)/ std::pow(gamma1 + gamma2, 0.5) * \
         std::exp(-(pgto1.exponent*pgto2.exponent*rab2/gamma1) - (pgto3.exponent*pgto4.exponent*rcd2/gamma2));
 
