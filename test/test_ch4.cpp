@@ -34,12 +34,13 @@ BOOST_AUTO_TEST_CASE(CH4_rhf_system)
     CGTOs bfs = generate_bfs(CH4, "sto3g.dat");
     REAL rhf_en = rhf(bfs, CH4);
     std::cerr << rhf_en << std::endl;
-    //REAL uhf_en = uhf(bfs, CH4);
-    //std::cerr << uhf_en << std::endl;
+    REAL uhf_en = uhf(bfs, CH4);
+    std::cerr << uhf_en << std::endl;
     const REAL Etot = -39.7269;
 
     //BOOST_CHECK( numerical_check(NEI, 1.8310-1.1167, 0.001) );
     BOOST_CHECK( std::abs(rhf_en - Etot) < 0.001 );
+    BOOST_CHECK( std::abs(rhf_en - uhf_en) < 0.001 );
     
 }
 
