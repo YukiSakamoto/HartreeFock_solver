@@ -1,0 +1,7 @@
+CMakeCache.txt
+CMakeFiles/
+CTestTestfile.cmake
+Eigen/
+Makefile
+cmake_install.cmake
+libhf_solver.so
