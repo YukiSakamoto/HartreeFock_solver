@@ -117,23 +117,46 @@ calculate_K(const CGTOs &bfs, const System &atoms)
 }
 
 void
+set_value_G(size_t u, size_t v, size_t p, size_t q, MatrixXReal &G_out, const MatrixXReal &D, REAL doubleJ)
+{
+    G_out(u,v) += D(p,q) * doubleJ;
+    G_out(u,q) -= D(p,v) * doubleJ * 0.5;
+    if (p != q) {   // q <=> p exchange
+        G_out(u,v) += D(p,q) * doubleJ;
+        G_out(u,p) -= D(q,v) * doubleJ * 0.5;
+    }
+    if (u != v) {    // u <=> v exchange
+        G_out(v,u) += D(p,q) * doubleJ;
+        G_out(v,q) -= D(p,u) * doubleJ * 0.5;
+        if (p != q) {   // q <=> p exchange
+            G_out(v,u) += D(q,p) * doubleJ;
+            G_out(v,p) -= D(q,u) * doubleJ * 0.5;
+        }
+    }
+}
+
+void
 calculate_G(const CGTOs &bfs, const MatrixXReal& D, MatrixXReal &G_out)
 {
     size_t dim = bfs.size();
     // TODO Optimize and reduce the loop
     for(size_t u = 0; u < dim; u++) {
         for(size_t v = u; v < dim; v++) {
-            REAL temp = 0.;
+            size_t uv = (u+1) * (v+1);
             for(size_t p = 0; p < dim; p++) {
-                for(size_t q = 0; q < dim; q++) {
-                    REAL doubleJ = electron_repulsion_CGTO(bfs[u], bfs[v], bfs[p], bfs[q]);
-                    REAL k = 0.5 * electron_repulsion_CGTO(bfs[u], bfs[q], bfs[p], bfs[v]);
-                    temp += D(p,q) * (doubleJ - k);
+                for(size_t q = p; q < dim; q++) {
+                    size_t pq = (p+1) * (q+1);
+
+                    REAL doubleJ       = electron_repulsion_CGTO(bfs[u], bfs[v], bfs[p], bfs[q]);
+                    //REAL doubleJ_prime = electron_repulsion_CGTO(bfs[p], bfs[q], bfs[u], bfs[v]);
+                    //if (std::abs(doubleJ - doubleJ_prime) > 0.00001) {
+                    //    std::cerr << doubleJ << std::endl;
+                    //    std::cerr << doubleJ_prime << std::endl;
+                    //    std::cerr << "illegal" << std::endl;
+                    //    throw;
+                    //}
+                    set_value_G(u,v,p,q,G_out,D,doubleJ);
                 }
-            }
-            G_out(u,v) = temp;
-            if (u != v) {
-                G_out(v,u) = temp;
             }
         }
     }

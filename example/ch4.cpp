@@ -25,8 +25,8 @@ CH4(REAL /*ignored*/)
     CH4.add_atom(H3);
     CH4.add_atom(H4);
 
-    CGTOs bfs = generate_bfs(CH4, "sto3g.dat");
-    //CGTOs bfs = generate_bfs(CH4, "p631G.dat");
+    //CGTOs bfs = generate_bfs(CH4, "sto3g.dat");
+    CGTOs bfs = generate_bfs(CH4, "p631G.dat");
     rhf(bfs, CH4);
 
     return 0.;
