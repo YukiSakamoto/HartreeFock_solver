@@ -7,7 +7,8 @@ endif()
 
 set(CMAKE_CXX_FLAGS "-Wall -Wextra")
 set(CMAKE_CXX_FLAGS_DEBUG "-g")
-set(CMAKE_CXX_FLAGS_RELEASE "-O3")
+set(CMAKE_CXX_FLAGS_RELEASE "-O3 -fopenmp")
+#set(CMAKE_CXX_FLAGS_RELEASE "-O3")
 
 add_library(hf_solver SHARED
 	gto.cpp gto_eval.cpp orbitals.cpp system.cpp default.hpp hf.cpp basis_set.cpp
