@@ -4,6 +4,8 @@
 #include "orbitals.hpp"
 #include "basis_set.hpp"
 
+namespace MOSolver {
+
 struct CGTOs
 generate_bfs(const System &system, const std::string &basisset_filename)
 {
@@ -167,3 +169,5 @@ calculate_G_uhf(const CGTOs &bfs, const MatrixXReal& D_alpha, const MatrixXReal 
     }
     return;
 }
+
+} // namespace MOSolver

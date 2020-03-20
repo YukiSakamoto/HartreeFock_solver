@@ -13,6 +13,8 @@
 
 #include <iostream>
 
+namespace MOSolver {
+
 MatrixXReal
 symmetric_orthogonalization(const MatrixXReal& S)
 {
@@ -459,3 +461,4 @@ uhf(const CGTOs& bfs, const System &system)
 
 
 
+} // namespace MOSolver

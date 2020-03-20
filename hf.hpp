@@ -7,6 +7,7 @@
 #include "system.hpp"
 #include "Eigen/Core"
 
+namespace MOSolver {
 
 MatrixXReal
 symmetric_orthogonalization(const MatrixXReal& S);
@@ -40,3 +41,5 @@ rhf(const CGTOs& bfs, const System &system);
 
 REAL
 uhf(const CGTOs& bfs, const System &system);
+
+}   // namespace MOSolver

@@ -1,5 +1,7 @@
 #include "system.hpp"
 
+namespace MOSolver {
+
 REAL 
 System::nuclear_repulsion() const
 {
@@ -14,3 +16,5 @@ System::nuclear_repulsion() const
     }
     return t;
 }
+
+} // namespace MOSolver 

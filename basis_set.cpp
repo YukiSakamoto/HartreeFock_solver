@@ -14,6 +14,8 @@
 #include "common.hpp"
 #include "basis_set.hpp"
 
+namespace MOSolver {
+
 //============================================================
 //  This file contains the routine for parse basis set data
 //   formatted for Gaussian program.
@@ -123,3 +125,5 @@ int main(int argc, char **argv)
     }
     return 0;
 }
+
+} //namespace MOSolver

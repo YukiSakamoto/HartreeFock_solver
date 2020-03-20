@@ -6,6 +6,8 @@
 #include "Eigen/Core"
 #include <vector>
 
+namespace MOSolver {
+
 struct CGTOs {
     typedef std::vector<ContractedGTO> CGTO_container;
 
@@ -59,3 +61,5 @@ calculate_G(const CGTOs &bfs, const MatrixXReal& D, MatrixXReal &G_out);
 void
 calculate_G_uhf(const CGTOs &bfs, const MatrixXReal& D_alpha, const MatrixXReal &D_beta, 
         MatrixXReal& G_alpha_out, MatrixXReal& G_beta_out);
+
+}   // namespace MOSolver

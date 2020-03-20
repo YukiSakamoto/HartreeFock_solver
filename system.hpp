@@ -4,6 +4,7 @@
 #include "Eigen/Core"
 #include <vector>
 
+namespace MOSolver {
 
 struct AtomType {
     char atom[3];
@@ -99,4 +100,5 @@ struct System {
 
 
 
+} //namespace MOSolver 
 

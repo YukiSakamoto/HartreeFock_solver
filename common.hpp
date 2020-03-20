@@ -1,6 +1,8 @@
 #pragma once
 #include "Eigen/Core"
 
+namespace MOSolver {
+
 // numerical precision: Double 
 typedef double REAL;
 typedef Eigen::VectorXd VectorXReal;
@@ -83,3 +85,5 @@ Angstrom2Bohr(REAL x, REAL y, REAL z)
     Vector3Real r = Vector3Real(x,y,z);
     return r * factor_Angstrom2Bohr;
 }
+
+} // namespace MOSolver

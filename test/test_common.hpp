@@ -1,4 +1,6 @@
 
+namespace MOSolver {
+
 inline bool 
 numerical_check(REAL result, REAL answer, REAL delta)
 {
@@ -9,6 +11,6 @@ numerical_check(REAL result, REAL answer, REAL delta)
     }
 }
 
-
+}
 
 

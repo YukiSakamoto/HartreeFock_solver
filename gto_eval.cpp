@@ -7,6 +7,8 @@
 #include <algorithm>
 #include <boost/array.hpp>
 
+namespace MOSolver {
+
 static REAL 
 _overlap1D(
         REAL exponent1, REAL x1, int l1, 
@@ -265,5 +267,4 @@ electron_repulsion_CGTO(const ContractedGTO &cgto1, const ContractedGTO &cgto2, 
     return t * cgto1.norm_factor * cgto2.norm_factor * cgto3.norm_factor * cgto4.norm_factor;
 }
 
-
-
+} // namespace MOSolver 

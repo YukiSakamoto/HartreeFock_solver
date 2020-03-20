@@ -3,6 +3,8 @@
 #include "common.hpp"
 #include "boost/format.hpp"
 
+namespace MOSolver {
+
 inline
 std::string vec_real_to_string(const std::vector<REAL> &v) {
     std::stringstream ss;
@@ -72,3 +74,5 @@ struct BasisSet {
 
 struct BasisSet 
 parse_basisset_file(const std::string &filename);
+
+} //namespace MOSolver 

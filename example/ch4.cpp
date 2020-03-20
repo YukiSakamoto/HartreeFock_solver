@@ -9,6 +9,7 @@
 
 #include <iostream>
 
+using namespace MOSolver;
 
 REAL
 CH4(REAL /*ignored*/)

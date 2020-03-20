@@ -12,7 +12,7 @@
 #include "../hf.hpp"
 #include "test_common.hpp"
 
-
+using namespace MOSolver;
 
 BOOST_AUTO_TEST_CASE(CH4_rhf_system)
 {

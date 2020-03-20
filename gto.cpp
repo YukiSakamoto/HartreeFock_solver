@@ -2,6 +2,8 @@
 #include "gto.hpp"
 #include <cmath>
 
+namespace MOSolver {
+
 REAL 
 PrimitiveGTO::value(REAL rx, REAL ry, REAL rz) {
     Vector3Real r(Vector3Real(rx, ry, rz));
@@ -28,3 +30,4 @@ PrimitiveGTO::normalize() {
     norm_factor = std::sqrt(numerator / denominator);
 }
 
+} // namespace MOSolver

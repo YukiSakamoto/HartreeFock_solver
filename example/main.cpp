@@ -12,6 +12,8 @@
 
 #include <Eigen/Eigen> 
 
+using namespace MOSolver;
+
 REAL
 HeH(REAL r12)
 {

@@ -11,6 +11,7 @@
 #include "../gto_eval.hpp"
 #include "test_common.hpp"
 
+using namespace MOSolver;
 
 BOOST_AUTO_TEST_CASE(Hydrogen_R14_sto3g_integrals)
 {

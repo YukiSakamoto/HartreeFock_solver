@@ -8,6 +8,8 @@
 
 #include <iostream>
 
+namespace MOSolver {
+
 // defined in the gto_eval.hpp
 struct ContractedGTO;
 REAL overlap_CGTO(const ContractedGTO &lhs, const ContractedGTO &rhs); // gto_eval
@@ -103,3 +105,5 @@ struct ContractedGTO {
     Coeff_list coeff_list;
     bool normalized;
 };
+
+} // namespace MOSolver

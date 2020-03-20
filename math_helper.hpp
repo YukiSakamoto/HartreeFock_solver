@@ -3,6 +3,8 @@
 #include <boost/math/special_functions/gamma.hpp>
 // #include <gsl/gsl_sf_gamma.h>  
 
+namespace MOSolver {
+
 inline
 int factorial(int n)
 {
@@ -58,3 +60,4 @@ boys(REAL n, REAL x) {
 }
 
 
+} // namespace MOSolver

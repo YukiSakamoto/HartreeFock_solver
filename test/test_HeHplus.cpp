@@ -13,6 +13,8 @@
 #include "../hf.hpp"
 #include "test_common.hpp"
 
+using namespace MOSolver;
+
 BOOST_AUTO_TEST_CASE(HeH_R14632_sto3g)
 {
     REAL r12 = 1.4632;
