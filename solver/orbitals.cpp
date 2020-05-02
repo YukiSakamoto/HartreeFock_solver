@@ -25,6 +25,23 @@ generate_bfs(const System &system, const std::string &basisset_filename)
     return bfs;
 }
 
+struct CGTOs
+generate_bfs(const System &system, const BasisSet &basis_set)
+{
+    CGTOs bfs;
+    std::vector<Atom>::const_iterator it = system.atom_list_.begin();
+    for(; it != system.atom_list_.end(); it++) {
+        struct AtomBasis atom_basis = basis_set.get(it->atomic_number);
+        std::cout << atom_basis.to_str() << std::endl;
+        for(size_t i_shell = 0; i_shell < atom_basis.orbitals.size(); i_shell++) {
+            int l = angular_momentum(atom_basis.orbitals[i_shell].type);
+            bfs.add_orbitals(l, it->center, 
+                    atom_basis.orbitals[i_shell].exponents,
+                    atom_basis.orbitals[i_shell].coeffs);
+        }
+    }
+    return bfs;
+}
 
 void
 CGTOs::add_orbitals(const int l, const Vector3Real center, 
