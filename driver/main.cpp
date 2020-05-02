@@ -1,6 +1,6 @@
-#include <string>
 #include "../solver/hf_solver.hpp"
 
+#include <string>
 #include <iostream>
 #include <fstream>
 #include <vector>
@@ -221,7 +221,11 @@ void read_input(const std::string input_filename, struct execute_context &params
 
 int main(int argc, char **argv)
 {
-    std::string input_filename = "methane.inp";
+    if (argc < 2) {
+        std::cerr << "Input file is not specifies" << std::endl;
+        throw;
+    }
+    std::string input_filename(argv[1]);
     struct execute_context params;
     read_input(input_filename, params);
 
