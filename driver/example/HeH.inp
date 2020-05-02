@@ -1,0 +1,7 @@
+# Methane
+Method =  hf			# Currently, only hf is available
+system =  HeH.xyz	# methane
+basis  =  p631G.dat		# Specify the basis_set file
+nspin  =  0				# Spin multiplicity 
+charge =  +1	
+

@@ -14,16 +14,14 @@ Build and Run
 
 - cmake (build system)
 - boost (boost unit_test_framework is used for the test)
-- gsl   (for special function)
 - Eigen (temlate library for the linear algebra)
 
 ### Linux
 
-Before running the CMake, expand the Eigen template library into the same directory.
-
-
  ``` shell
- cmake .
+ mkdir build	# out-of-source build is recommended
+ cd build
+ cmake ..
  make 
  make test
  ```
@@ -36,8 +34,8 @@ To Be Confirmed
 Running
 -------
  ```shell
- cd example
- ./run_rhf
+ cd build/examples
+ ../MOSolver methane.inp
  ```
  
  

@@ -5,6 +5,7 @@
 #include "system.hpp"
 #include "Eigen/Core"
 #include <vector>
+#include "basis_set.hpp"
 
 namespace MOSolver {
 
@@ -42,6 +43,9 @@ struct CGTOs {
 
 struct CGTOs
 generate_bfs(const System &system, const std::string &basisset_filename);
+
+struct CGTOs
+generate_bfs(const System &system, const BasisSet &basis_set);
 
 MatrixXReal
 calculate_S(const CGTOs &cgtos);
