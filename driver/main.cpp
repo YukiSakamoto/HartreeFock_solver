@@ -234,15 +234,29 @@ int main(int argc, char **argv)
 
     MOSolver::BasisSet basis_set(params.basisset_file);
     read_basisset_file(params.basisset_file, basis_set);
-    MOSolver::CGTOs bfs = generate_bfs(system, basis_set);
 
+    std::cout << "************************ MOSolver ************************" << std::endl;
+    std::cout << boost::format("%-20s %s\n") % "Input:"  % input_filename;
+    std::cout << boost::format("%-20s %s\n") % "GeometryFile:" % params.geometry_file;
+    std::cout << boost::format("%-20s %s\n") % "BasisSetFile:" % params.basisset_file;
+    std::cout << boost::format("%-20s %s\n") % "Title:"  % params.title_in_geometry_file;
+    std::cout << boost::format("%-20s %d\n") % "NAtom:"  % system.atom_list_.size();
+    std::cout << boost::format("%-20s %d\n") % "Charge:" % params.charge;
+    std::cout << boost::format("%-20s %d\n") % "NSpin:"  % params.multiplicity;
+    std::cout << "******************** Geometry in Bohr ********************" << std::endl;
     for(size_t i = 0; i < system.atom_list_.size(); i++) {
-        std::cout << boost::format("%-2d\t%-3.6f\t%-3.6f\t%-3.6f") 
+        std::cout << boost::format("%2s\t%-2d\t%-3.6f\t%-3.6f\t%-3.6f") 
+            % MOSolver::Elements[system.atom_list_[i].atomic_number] 
             % system.atom_list_[i].atomic_number 
             % system.atom_list_[i].center[0]
             % system.atom_list_[i].center[1]
             % system.atom_list_[i].center[2] << std::endl;
     }
+    std::cout << std::endl;
+    std::cout << "********************  Basis Function  ********************" << std::endl;
+    MOSolver::CGTOs bfs = generate_bfs(system, basis_set);
+
+    std::cout << "******************** Enter Calculation *******************" << std::endl;
     if (system.nspin() == 0) {
         MOSolver::rhf(bfs,system);
     } else {
