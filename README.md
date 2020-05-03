@@ -30,7 +30,7 @@ Build and Run
 
 * Loop optimization (default is OFF)
 ```
-cmake .. -DLOOP_OPT=ON
+cmake .. -DUSE_LOOP_OPT=ON
 ```
 
 ### Other Environment
