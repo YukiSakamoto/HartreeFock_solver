@@ -135,6 +135,53 @@ calculate_K(const CGTOs &bfs, const System &atoms)
     return T;
 }
 
+#ifdef LOOP_OPT
+inline
+void
+set_value_G(size_t u, size_t v, size_t p, size_t q, MatrixXReal &G_out, const MatrixXReal &D, REAL J)
+{
+    G_out(u,v) += D(p,q) * J;
+    G_out(u,q) -= D(p,v) * J * 0.5;
+    if (p != q) {   // q <=> p exchange
+        G_out(u,v) += D(p,q) * J;
+        G_out(u,p) -= D(q,v) * J * 0.5;
+    }
+    if (u != v) {    // u <=> v exchange
+        G_out(v,u) += D(p,q) * J;
+        G_out(v,q) -= D(p,u) * J * 0.5;
+        if (p != q) {   // q <=> p exchange
+            G_out(v,u) += D(q,p) * J;
+            G_out(v,p) -= D(q,u) * J * 0.5;
+        }
+    }
+}
+
+void
+calculate_G(const CGTOs &bfs, const MatrixXReal& D, MatrixXReal &G_out)
+{
+    size_t dim = bfs.size();
+    #pragma omp parallel
+    {
+        MatrixXReal G_out_per_thread = MatrixXReal::Zero(dim, dim);
+        #pragma omp for schedule(dynamic,1)
+        for(size_t u = 0; u < dim; u++) {
+            for(size_t v = u; v < dim; v++) {
+                for(size_t p = 0; p < dim; p++) {
+                    for(size_t q = p; q < dim; q++) {
+                        REAL J = electron_repulsion_CGTO(bfs[u], bfs[v], bfs[p], bfs[q]);
+                        set_value_G(u,v,p,q,G_out,D,J);
+                    }
+                }
+            }
+        }
+        #pragma omp critical
+        {
+            G_out += G_out_per_thread;
+        }
+    }
+
+}
+#else
 void
 calculate_G(const CGTOs &bfs, const MatrixXReal& D, MatrixXReal &G_out)
 {
@@ -157,6 +204,7 @@ calculate_G(const CGTOs &bfs, const MatrixXReal& D, MatrixXReal &G_out)
         }
     }
 }   
+#endif  // loop_opt
 
 void
 calculate_G_uhf(const CGTOs &bfs, const MatrixXReal& D_alpha, const MatrixXReal &D_beta, 
