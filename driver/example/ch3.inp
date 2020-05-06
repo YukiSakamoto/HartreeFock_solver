@@ -1,0 +1,7 @@
+# Methane
+Method =  uhf			# Currently, only hf is available
+system =  ch3.xyz		# methane
+basis  =  sto3g.dat		# Specify the basis_set file
+nspin  =  1				# Spin multiplicity 
+charge =  0		
+
