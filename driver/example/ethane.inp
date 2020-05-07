@@ -1,0 +1,7 @@
+# Methane
+Method =  hf			# Currently, only hf is available
+system =  ethane.xyz	# methane
+basis  =  sto3g.dat		# Specify the basis_set file
+nspin  =  0				# Spin multiplicity 
+charge =  0		
+

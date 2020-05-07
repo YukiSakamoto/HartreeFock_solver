@@ -33,14 +33,14 @@ _overlap3D(
     REAL dist2 = (center1 - center2).squaredNorm();
     REAL gamma = exponent1 + exponent2;
     if (gamma == REAL(0.)) {
-        std::cout << __LINE__ << std::endl;
+        std::cout << __FILE__ << ":" <<  __LINE__ << std::endl;
         throw;
     }
     REAL prefactor = std::pow(M_PI/gamma, 1.5) * std::exp(-exponent1 * exponent2 * dist2 / gamma);
-    if (prefactor == REAL(0.)) {
-        std::cout << __LINE__ << std::endl;
-        throw;
-    }
+    //if (prefactor == REAL(0.)) {
+    //    std::cout << __FILE__ << ":" <<  __LINE__ << std::endl;
+    //    throw;
+    //}
 
     REAL sx = _overlap1D(exponent1, center1[0], l1, exponent2, center2[0], l2);
     REAL sy = _overlap1D(exponent1, center1[1], m1, exponent2, center2[1], m2);
