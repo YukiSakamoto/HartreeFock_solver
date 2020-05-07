@@ -186,39 +186,29 @@ rhf(const CGTOs& bfs, const System &system)
             throw;
         }
     }
-     std::cout << "************************************************************\n";
-     std::cout << "  Building Matrices... (S, Hcore, init_D)\n";
-     std::cout << "************************************************************\n";
     //==================================================
     //  Building Integral Matrices
     //==================================================
     // 1. Overlap Matrix
     MatrixXReal S = calculate_S(bfs);
-    std::cout << "**** Overlap Matrix: ****\n" << S << std::endl;
 
     // 2. Orthodiagonalization of S-matrix (|X>)
     //MatrixXReal X = symmetric_orthogonalization(S);
-    //std::cout << "symmetric_orthogonalization:\n" << X << std::endl;
     MatrixXReal X = canonical_orthogonalization(S);
-    std::cout << "**** canonical_orthogonalization: ****\n" << X << std::endl;
     // (<X|)   => <X|S|X> equals E(Unit Matrix)
     MatrixXReal X_adj = X.adjoint();
 
     // 3. Kinetic Energy Integral Matrix
     MatrixXReal T = calculate_T(bfs);
-    std::cout << "**** Kinetic Matrix: ****\n" << T << std::endl;
 
     // 4. Nuclear Attraction Integral Matrix
     MatrixXReal V = calculate_K(bfs, system);
-    std::cout << "**** V(Nuclear Attraction): ****\n" << V << std::endl;
 
     // 5. Hcore Matrix
     MatrixXReal Hcore = T + V;
-    std::cout << "Hcore = T + V:\n" << Hcore << std::endl;
 
     // 6. Obtain Initial Density Matrix from Guess
     MatrixXReal D = initial_guess(bfs, system);
-    std::cout << "D(initial guess):\n" << D << std::endl;
 
     // 7. Nuclear Repulsions;
     REAL NEI = system.nuclear_repulsion();
@@ -230,26 +220,22 @@ rhf(const CGTOs& bfs, const System &system)
     //==================================================
     //  Entering the SCF Loop
     //==================================================
-    const int max_iteration = 20;
+    const int max_iteration = 40;
     bool convergence_flag = false;
     REAL E_conv = 0.;
     for(size_t i = 0; i < max_iteration; i++) {
         std::cout << " [Iteration " << i << " ] " << std::endl;
-        std::cout << "D:\n" << D << std::endl;
 
         // Calculate the multicenter integrals with D;
         MatrixXReal G = MatrixXReal::Zero(dim, dim);
         calculate_G(bfs, D, G);
-        std::cout << "G:\n" <<G << std::endl;
 
         // Build current Fock matrix
         MatrixXReal F = Hcore + G;
-        std::cout << "F:\n" << F << std::endl;
 
         // Rotating F matrix 
         //   (F' = <X|F|X>, where <X|S|X> = E)
         MatrixXReal F_prim = X_adj * F * X;
-        std::cout << "F':\n" << F_prim << std::endl;
 
         // Solve the Fock matrix.
         Eigen::SelfAdjointEigenSolver<MatrixXReal> es(F_prim);
@@ -258,15 +244,10 @@ rhf(const CGTOs& bfs, const System &system)
         // Energies and New coefficients 
         VectorXReal e = es.eigenvalues();
         MatrixXReal C_new_prime = es.eigenvectors();
-        std::cout << "e: \n" << e << std::endl;
-        std::cout << "C_new':\n" << C_new_prime << std::endl;
         MatrixXReal C_new = X * C_new_prime;
-        std::cout << "C_new:\n" << C_new << std::endl;
 
         // Calculate the NEW Density matrix ( <C|C> )
-        //MatrixXReal D_new =  C_new_prime * C_new_prime.transpose();
         MatrixXReal D_new =  form_D(C_new, n_occ_orbitals);
-        std::cout << "D_new:\n" << D_new << std::endl;
 
         // Calculate the Hartree Fock Energy
         REAL E0 = calculate_E0(D,Hcore,F);
@@ -284,7 +265,6 @@ rhf(const CGTOs& bfs, const System &system)
 
         // Output current cycle
         std::cout << "RMSDP: "<< rmsdp << ", MAXDP: " << maxdp << std::endl;
-        //std::cout << "E0: " << E0  << "  Etot: " << Etot << std::endl;
         std::cout << boost::format("E0 : %15.10f   Etot: %15.10f\n") % E0 % Etot;
         std::cout << "============================================================\n";
 
@@ -318,81 +298,59 @@ uhf(const CGTOs& bfs, const System &system)
        }
     }
 
-    std::cout << "************************************************************\n";
-    std::cout << "  Building Matrices... (S, Hcore, init_D)\n";
-    std::cout << "************************************************************\n";
-
     //==================================================
     //  Building Integral Matrices
     //==================================================
     // 1. Overlap Matrix
     MatrixXReal S = calculate_S(bfs);
-    std::cout << "**** Overlap Matrix: ****\n" << S << std::endl;
 
     // 2. Orthodiagonalization of S-matrix (|X>)
     //MatrixXReal X = symmetric_orthogonalization(S);
-    //std::cout << "symmetric_orthogonalization:\n" << X << std::endl;
     MatrixXReal X = canonical_orthogonalization(S);
-    std::cout << "**** canonical_orthogonalization: ****\n" << X << std::endl;
     // (<X|)   => <X|S|X> equals E(Unit Matrix)
     MatrixXReal X_adj = X.adjoint();
 
     // 3. Kinetic Energy Integral Matrix
     MatrixXReal T = calculate_T(bfs);
-    std::cout << "**** Kinetic Matrix: ****\n" << T << std::endl;
 
     // 4. Nuclear Attraction Integral Matrix
     MatrixXReal V = calculate_K(bfs, system);
-    std::cout << "**** V(Nuclear Attraction): ****\n" << V << std::endl;
 
     // 5. Hcore Matrix
     MatrixXReal Hcore = T + V;
-    std::cout << "**** Hcore = T + V: ****\n" << Hcore << std::endl;
 
     // 6. Obtain Initial Density Matrix from Guess
     MatrixXReal D_alpha = initial_guess(bfs, system);
     MatrixXReal D_beta  = initial_guess(bfs, system);
     MatrixXReal D_total = D_alpha + D_beta;
-    std::cout << "D_total(initial guess):\n" << D_total << std::endl;
-    std::cout << "D_alpha(initial guess):\n" << D_alpha << std::endl;
-    std::cout << "D_beta (initial guess):\n" << D_beta  << std::endl;
 
     // 7. Nuclear Repulsions;
     REAL NEI = system.nuclear_repulsion();
-    std::cout << "**** Energy from Nuclear Repulsion: " << NEI << std::endl;
+    std::cout << "NEI: " << NEI << std::endl;
 
     std::cout << "************************************************************\n";
     std::cout << "  Entering the SCF Loop\n";
     std::cout << "************************************************************\n";
-    const int max_iteration = 20;
+    const int max_iteration = 40;
     bool convergence_flag = false;
     REAL E_conv = 0.;
     for(size_t i = 0; i < max_iteration; i++) {
         std::cout << " [Iteration " << i << " ] " << std::endl;
-        std::cout << "D_alpha:\n" << D_alpha << std::endl;
-        std::cout << "D_beta:\n"  << D_beta  << std::endl;
-        std::cout << "D_total:\n" << D_alpha + D_beta << std::endl;
 
         // Calculate the multicenter integrals with D;
         int dim = bfs.size();
         MatrixXReal G_alpha = MatrixXReal::Zero(dim, dim);
         MatrixXReal G_beta  = MatrixXReal::Zero(dim, dim);
         calculate_G_uhf(bfs, D_alpha, D_beta, G_alpha, G_beta);
-        std::cout << "G_alpha:\n" <<G_alpha << std::endl;
-        std::cout << "G_beta:\n"  <<G_beta  << std::endl;
 
         // Build current Fock matrix
         MatrixXReal F_alpha = Hcore + G_alpha;
         MatrixXReal F_beta  = Hcore + G_beta;
-        std::cout << "F_alpha:\n" << F_alpha << std::endl;
-        std::cout << "F_beta:\n"  << F_beta  << std::endl;
 
         // Rotating F matrix 
         //   (F' = <X|F|X>, where <X|S|X> = E)
         MatrixXReal F_alpha_prim = X_adj * F_alpha * X;
         MatrixXReal F_beta_prim  = X_adj * F_beta  * X;
-        std::cout << "F_alpha':\n" << F_alpha_prim << std::endl;
-        std::cout << "F_beta':\n"  << F_beta_prim << std::endl;
 
         // Solve the Fock matrix.
         Eigen::SelfAdjointEigenSolver<MatrixXReal> es_alpha(F_alpha_prim);
@@ -405,21 +363,12 @@ uhf(const CGTOs& bfs, const System &system)
         MatrixXReal C_alpha_new_prime = es_alpha.eigenvectors();
         MatrixXReal C_beta_new_prime  = es_beta.eigenvectors();
 
-        std::cout << "e_alpha: \n" << e_alpha << std::endl;
-        std::cout << "e_beta: \n"  << e_beta << std::endl;
-        std::cout << "C_alpha_new':\n" << C_alpha_new_prime << std::endl;
-        std::cout << "C_beta_new':\n"  << C_beta_new_prime << std::endl;
-
         MatrixXReal C_alpha_new = X * C_alpha_new_prime;
         MatrixXReal C_beta_new  = X * C_beta_new_prime;
-        std::cout << "C_alpha_new:\n" << C_alpha_new << std::endl;
-        std::cout << "C_beta_new:\n"  << C_beta_new << std::endl;
 
         // Calculate the NEW Density matrix ( <C|C> )
         MatrixXReal D_alpha_new =  form_D_uhf(C_alpha_new, occ_alpha);
         MatrixXReal D_beta_new  =  form_D_uhf(C_beta_new,  occ_beta);
-        std::cout << "D_alpha_new:\n" << D_alpha_new << std::endl;
-        std::cout << "D_beta_new:\n" << D_beta_new << std::endl;
 
         // Calculate the Hartree Fock Energy
         REAL E0 = calculate_E0_uhf(D_alpha, D_beta, Hcore, F_alpha, F_beta);
@@ -440,7 +389,6 @@ uhf(const CGTOs& bfs, const System &system)
         }
 
         std::cout << "RMSDP: "<< rmsdp_alpha + rmsdp_beta << ", MAXDP: " << maxdp_alpha + maxdp_beta << std::endl;
-        //std::cout << "E0: " << E0  << "  Etot: " << Etot << std::endl;
         std::cout << boost::format("E0 : %15.10f   Etot: %15.10f\n") % E0 % Etot;
         std::cout << "============================================================\n";
 
