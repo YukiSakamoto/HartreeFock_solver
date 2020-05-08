@@ -169,7 +169,7 @@ calculate_G(const CGTOs &bfs, const MatrixXReal& D, MatrixXReal &G_out)
                 for(size_t p = 0; p < dim; p++) {
                     for(size_t q = p; q < dim; q++) {
                         REAL J = electron_repulsion_CGTO(bfs[u], bfs[v], bfs[p], bfs[q]);
-                        set_value_G(u,v,p,q,G_out,D,J);
+                        set_value_G(u,v,p,q,G_out_per_thread,D,J);
                     }
                 }
             }
@@ -218,14 +218,25 @@ calculate_G_uhf(const CGTOs &bfs, const MatrixXReal& D_alpha, const MatrixXReal 
 {
     size_t dim = bfs.size();
     MatrixXReal D_total = D_alpha + D_beta;
-    for(size_t u = 0; u < dim; u++) {
-        for(size_t v = u; v < dim; v++) {
-            for(size_t p = 0; p < dim; p++) {
-                for(size_t q = p; q < dim; q++) {
-                    REAL J = electron_repulsion_CGTO(bfs[u], bfs[v], bfs[p], bfs[q]);
-                    set_value_G_uhf(u,v,p,q, G_alpha_out, G_beta_out, D_alpha, D_beta, D_total, J);
+    #pragma omp parallel
+    {
+        MatrixXReal G_alpha_out_per_thread = MatrixXReal::Zero(dim, dim);
+        MatrixXReal G_beta_out_per_thread  = MatrixXReal::Zero(dim, dim);
+        #pragma omp for schedule(dynamic,1)
+        for(size_t u = 0; u < dim; u++) {
+            for(size_t v = u; v < dim; v++) {
+                for(size_t p = 0; p < dim; p++) {
+                    for(size_t q = p; q < dim; q++) {
+                        REAL J = electron_repulsion_CGTO(bfs[u], bfs[v], bfs[p], bfs[q]);
+                        set_value_G_uhf(u,v,p,q, G_alpha_out_per_thread, G_beta_out_per_thread, D_alpha, D_beta, D_total, J);
+                    }
                 }
             }
+        }
+        #pragma omp critical
+        {
+            G_alpha_out += G_alpha_out_per_thread;
+            G_beta_out  += G_beta_out_per_thread;
         }
     }
 }
