@@ -173,8 +173,11 @@ calculate_E0_uhf(const MatrixXReal &D_alpha, const MatrixXReal &D_beta, const Ma
 }
 
 REAL
-rhf(const CGTOs& bfs, const System &system)
+rhf(const CGTOs& bfs, const System &system,
+        const int  nconvergence, 
+        const size_t max_iteration)
 {
+    std::cout << nconvergence << std::endl;
     int tot_electrons = system.total_electrons();
     int n_occ_orbitals = tot_electrons / 2;
     int dim = bfs.size();
@@ -220,7 +223,6 @@ rhf(const CGTOs& bfs, const System &system)
     //==================================================
     //  Entering the SCF Loop
     //==================================================
-    const int max_iteration = 40;
     bool convergence_flag = false;
     REAL E_conv = 0.;
     for(size_t i = 0; i < max_iteration; i++) {
@@ -257,8 +259,8 @@ rhf(const CGTOs& bfs, const System &system)
         REAL rmsdp = 0.;    
         REAL maxdp = 0.;
         rmsdp = check_scf_convergence(D_new, D, &maxdp);
-        REAL convergence = std::pow(10.0, -NConvergence);
-        REAL maxdp_convergence = std::pow(10.0, -NConvergence+2);
+        REAL convergence = std::pow(10.0, -nconvergence);
+        REAL maxdp_convergence = std::pow(10.0, -nconvergence+2);
         if (rmsdp < convergence && maxdp < maxdp_convergence) {
             convergence_flag = true;
         }
@@ -281,7 +283,9 @@ rhf(const CGTOs& bfs, const System &system)
 }
 
 REAL
-uhf(const CGTOs& bfs, const System &system)
+uhf(const CGTOs& bfs, const System &system,
+        const int  nconvergence, 
+        const size_t max_iteration)
 {
     int total_electrons = system.total_electrons();
     int n_spin = system.nspin();
@@ -331,7 +335,6 @@ uhf(const CGTOs& bfs, const System &system)
     std::cout << "************************************************************\n";
     std::cout << "  Entering the SCF Loop\n";
     std::cout << "************************************************************\n";
-    const int max_iteration = 40;
     bool convergence_flag = false;
     REAL E_conv = 0.;
     for(size_t i = 0; i < max_iteration; i++) {
@@ -382,8 +385,8 @@ uhf(const CGTOs& bfs, const System &system)
         rmsdp_alpha = check_scf_convergence(D_alpha_new, D_alpha, &maxdp_alpha);
         rmsdp_beta = check_scf_convergence(D_beta_new, D_beta, &maxdp_beta);
 
-        REAL convergence = std::pow(10.0, -NConvergence);
-        REAL maxdp_convergence = std::pow(10.0, -NConvergence+2);
+        REAL convergence = std::pow(10.0, -nconvergence);
+        REAL maxdp_convergence = std::pow(10.0, -nconvergence+2);
         if (rmsdp_alpha + rmsdp_beta < convergence && maxdp_alpha + maxdp_beta < maxdp_convergence) {
             convergence_flag = true;
         }

@@ -170,12 +170,17 @@ std::string remove_comment(const std::string &line)
 }
 
 struct execute_context {
-    std::string method;
+    execute_context():
+        charge(0), multiplicity(0), max_iter(MOSolver::DefaultMaxIteration), nconv(MOSolver::DefaultNConvergence)
+    {}
     std::string input_file;
     std::string geometry_file;
     std::string basisset_file;
+    std::string method;
     int charge;
     int multiplicity;
+    int max_iter;
+    int nconv;
     std::string title_in_geometry_file;
 };
 
@@ -209,6 +214,10 @@ void read_input(const std::string input_filename, struct execute_context &params
                 params.charge = boost::lexical_cast<int>(val);
             } else if(name == "nspin") {
                 params.multiplicity = boost::lexical_cast<int>(val);
+            } else if (name == "max_iter") {
+                params.max_iter = boost::lexical_cast<int>(val);
+            } else if (name == "nconv") {
+                params.nconv = boost::lexical_cast<int>(val);
             } else {
                 std::cerr << boost::format("line %3d in %s: Unknown parameter: %s.") 
                     % line_count % input_filename % tokens[0]  << std::endl;
@@ -243,6 +252,8 @@ int main(int argc, char **argv)
     std::cout << boost::format("%-20s %d\n") % "NAtom:"  % system.atom_list_.size();
     std::cout << boost::format("%-20s %d\n") % "Charge:" % params.charge;
     std::cout << boost::format("%-20s %d\n") % "NSpin:"  % params.multiplicity;
+    std::cout << boost::format("%-20s %d\n") % "NConv:"  % params.nconv;
+    std::cout << boost::format("%-20s %d\n") % "MaxIter:"% params.max_iter;
     std::cout << "******************** Geometry in Bohr ********************" << std::endl;
     for(size_t i = 0; i < system.atom_list_.size(); i++) {
         std::cout << boost::format("%2s\t%-2d\t%-3.6f\t%-3.6f\t%-3.6f") 
@@ -258,9 +269,9 @@ int main(int argc, char **argv)
 
     std::cout << "******************** Enter Calculation *******************" << std::endl;
     if (system.nspin() == 0) {
-        MOSolver::rhf(bfs,system);
+        MOSolver::rhf(bfs,system, params.nconv, params.max_iter);
     } else {
-        MOSolver::uhf(bfs,system);
+        MOSolver::uhf(bfs,system, params.nconv, params.max_iter);
     }
     return 0;
 }

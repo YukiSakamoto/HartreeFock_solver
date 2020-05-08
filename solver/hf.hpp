@@ -1,5 +1,5 @@
 #include "common.hpp"
-
+#include "default.hpp"
 #include "math_helper.hpp"
 #include "gto.hpp"
 #include "gto_eval.hpp"
@@ -37,9 +37,12 @@ MatrixXReal
 initial_guess(const CGTOs& bfs, const System &atoms);
 
 REAL
-rhf(const CGTOs& bfs, const System &system);
+rhf(const CGTOs& bfs, const System &system,
+        const int  nconvergence  = DefaultNConvergence,
+        const size_t max_iteration = DefaultMaxIteration );
 
 REAL
-uhf(const CGTOs& bfs, const System &system);
-
+uhf(const CGTOs& bfs, const System &system,
+        const int  nconvergence  = DefaultNConvergence,
+        const size_t max_iteration = DefaultMaxIteration );
 }   // namespace MOSolver
