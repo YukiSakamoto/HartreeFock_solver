@@ -218,7 +218,7 @@ rhf(const CGTOs& bfs, const System &system,
     std::cout << "NEI: " << NEI << std::endl;
 
      std::cout << "************************************************************\n";
-     std::cout << "  Entering the SCF Loop\n";
+     std::cout << "  RHF: Entering the SCF Loop\n";
      std::cout << "************************************************************\n";
     //==================================================
     //  Entering the SCF Loop
@@ -268,7 +268,6 @@ rhf(const CGTOs& bfs, const System &system,
         // Output current cycle
         std::cout << "RMSDP: "<< rmsdp << ", MAXDP: " << maxdp << std::endl;
         std::cout << boost::format("E0 : %15.10f   Etot: %15.10f\n") % E0 % Etot;
-        std::cout << "============================================================\n";
 
         if (convergence_flag == true) {
             std::cout << "CONVERGENCE ACHIEVED\n";
@@ -333,7 +332,7 @@ uhf(const CGTOs& bfs, const System &system,
     std::cout << "NEI: " << NEI << std::endl;
 
     std::cout << "************************************************************\n";
-    std::cout << "  Entering the SCF Loop\n";
+    std::cout << "  UHF: Entering the SCF Loop\n";
     std::cout << "************************************************************\n";
     bool convergence_flag = false;
     REAL E_conv = 0.;
@@ -393,7 +392,6 @@ uhf(const CGTOs& bfs, const System &system,
 
         std::cout << "RMSDP: "<< rmsdp_alpha + rmsdp_beta << ", MAXDP: " << maxdp_alpha + maxdp_beta << std::endl;
         std::cout << boost::format("E0 : %15.10f   Etot: %15.10f\n") % E0 % Etot;
-        std::cout << "============================================================\n";
 
         if (convergence_flag == true) {
             std::cout << "CONVERGENCE ACHIEVED\n";
