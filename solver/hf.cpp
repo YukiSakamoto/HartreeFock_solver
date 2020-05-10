@@ -282,6 +282,29 @@ rhf(const CGTOs& bfs, const System &system,
 }
 
 REAL
+calculate_spin_contamination(const MatrixXReal &C_alpha, const MatrixXReal &C_beta, 
+        const size_t n_occ_alpha, const size_t n_occ_beta, const MatrixXReal &S)
+{
+    // Szabo. pp.107 (2.272) 
+    size_t rows = S.rows();
+    size_t cols = S.cols();
+    REAL val = 0.;
+    for(size_t i = 0; i < n_occ_alpha; i++) {
+        for(size_t j = 0; j < n_occ_beta; j++) {
+            REAL v_ij = 0.;
+            for(size_t a = 0; a < cols; a++) {
+                for(size_t b = 0; b < rows; b++) {
+                    v_ij += C_alpha(a,i) * C_beta(b,j) * S(a,b);
+                } 
+            }
+            val += (v_ij * v_ij);
+        }
+    }
+    REAL spin_contamination = n_occ_beta - val;
+    return spin_contamination;
+}
+
+REAL
 uhf(const CGTOs& bfs, const System &system,
         const int  nconvergence, 
         const size_t max_iteration)
@@ -394,6 +417,9 @@ uhf(const CGTOs& bfs, const System &system,
         std::cout << boost::format("E0 : %15.10f   Etot: %15.10f\n") % E0 % Etot;
 
         if (convergence_flag == true) {
+            REAL s_exact = (n_spin/2.)*(n_spin/2. + 1);
+            REAL spin_contamination = calculate_spin_contamination(C_alpha_new, C_beta_new, occ_alpha, occ_beta, S);
+            std::cout << boost::format("<S^2_exact>: %15.10f   <S^2> : %15.10f\n") % s_exact % (s_exact + spin_contamination);
             std::cout << "CONVERGENCE ACHIEVED\n";
             E_conv = Etot;
             break;
