@@ -217,16 +217,19 @@ rhf(const CGTOs& bfs, const System &system,
     REAL NEI = system.nuclear_repulsion();
     std::cout << "NEI: " << NEI << std::endl;
 
-     std::cout << "************************************************************\n";
-     std::cout << "  RHF: Entering the SCF Loop\n";
-     std::cout << "************************************************************\n";
+    std::cout << "************************************************************\n";
+    std::cout << "  RHF: Entering the SCF Loop\n";
+    std::cout << "************************************************************\n";
+
+    REAL Etot_prev = 0.;
+    std::cout << boost::format("%4s %17s  %17s  %17s  %17s  %17s\n") % 
+        "Iter" % "Etot(a.u.)" % "E0(a.u.)" % "dE(a.u.)" % "RMSDP(a.u.)" % "MAXDP(a.u.)";
     //==================================================
     //  Entering the SCF Loop
     //==================================================
     bool convergence_flag = false;
     REAL E_conv = 0.;
     for(size_t i = 0; i < max_iteration; i++) {
-        std::cout << " [Iteration " << i << " ] " << std::endl;
 
         // Calculate the multicenter integrals with D;
         MatrixXReal G = MatrixXReal::Zero(dim, dim);
@@ -261,13 +264,13 @@ rhf(const CGTOs& bfs, const System &system,
         rmsdp = check_scf_convergence(D_new, D, &maxdp);
         REAL convergence = std::pow(10.0, -nconvergence);
         REAL maxdp_convergence = std::pow(10.0, -nconvergence+2);
+        REAL dE = Etot - Etot_prev;
         if (rmsdp < convergence && maxdp < maxdp_convergence) {
             convergence_flag = true;
         }
 
         // Output current cycle
-        std::cout << "RMSDP: "<< rmsdp << ", MAXDP: " << maxdp << std::endl;
-        std::cout << boost::format("E0 : %15.10f   Etot: %15.10f\n") % E0 % Etot;
+        std::cout << boost::format("#%3d %17.10f  %17.10f  %+17.10e  %17.10e  %17.10e\n") % (i+1) % Etot % E0 % dE % rmsdp % maxdp;
 
         if (convergence_flag == true) {
             std::cout << "CONVERGENCE ACHIEVED\n";
@@ -276,6 +279,7 @@ rhf(const CGTOs& bfs, const System &system,
         } else {
             //D = D * 0.3 + D_new * 0.7;
             D = D_new;
+            Etot_prev = Etot;
         }
     }
     return E_conv;
@@ -359,8 +363,11 @@ uhf(const CGTOs& bfs, const System &system,
     std::cout << "************************************************************\n";
     bool convergence_flag = false;
     REAL E_conv = 0.;
+    REAL Etot_prev = 0.;
+    std::cout << boost::format("%4s %17s  %17s  %17s  %17s  %17s\n") % 
+        "Iter" % "Etot(a.u.)" % "dEtot(a.u.)" % "E0(a.u.)" % "RMSDP(a.u.)" % "MAXDP(a.u.)";
+
     for(size_t i = 0; i < max_iteration; i++) {
-        std::cout << " [Iteration " << i << " ] " << std::endl;
 
         // Calculate the multicenter integrals with D;
         int dim = bfs.size();
@@ -409,12 +416,14 @@ uhf(const CGTOs& bfs, const System &system,
 
         REAL convergence = std::pow(10.0, -nconvergence);
         REAL maxdp_convergence = std::pow(10.0, -nconvergence+2);
+        REAL dE = Etot - Etot_prev;
         if (rmsdp_alpha + rmsdp_beta < convergence && maxdp_alpha + maxdp_beta < maxdp_convergence) {
             convergence_flag = true;
         }
 
-        std::cout << "RMSDP: "<< rmsdp_alpha + rmsdp_beta << ", MAXDP: " << maxdp_alpha + maxdp_beta << std::endl;
-        std::cout << boost::format("E0 : %15.10f   Etot: %15.10f\n") % E0 % Etot;
+        // Output current cycle
+        std::cout << boost::format("#%3d %17.10f  %17.10f  %+17.10e  %17.10e  %17.10e\n") % 
+            (i+1) % Etot % dE % E0 % (rmsdp_alpha + rmsdp_beta) % std::max(maxdp_alpha, maxdp_beta);
 
         if (convergence_flag == true) {
             REAL s_exact = (n_spin/2.)*(n_spin/2. + 1);
@@ -429,7 +438,7 @@ uhf(const CGTOs& bfs, const System &system,
             //D = D * 0.3 + D_new * 0.7;
             D_alpha = D_alpha_new;
             D_beta = D_beta_new;
-            std::cout << std::endl;
+            Etot_prev = Etot;
         }
     }
     return E_conv;
