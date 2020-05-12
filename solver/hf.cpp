@@ -419,7 +419,9 @@ uhf(const CGTOs& bfs, const System &system,
         if (convergence_flag == true) {
             REAL s_exact = (n_spin/2.)*(n_spin/2. + 1);
             REAL spin_contamination = calculate_spin_contamination(C_alpha_new, C_beta_new, occ_alpha, occ_beta, S);
-            std::cout << boost::format("<S^2_exact>: %15.10f   <S^2> : %15.10f\n") % s_exact % (s_exact + spin_contamination);
+            REAL s_approx = ( -1+std::sqrt(1+4*(s_exact+spin_contamination)) )/2.;
+            std::cout << boost::format("<S^2_exact>: %15.10f   <S^2> : %15.10f   <S> : %15.10f\n") % 
+                s_exact % (s_exact + spin_contamination) % s_approx;
             std::cout << "CONVERGENCE ACHIEVED\n";
             E_conv = Etot;
             break;
