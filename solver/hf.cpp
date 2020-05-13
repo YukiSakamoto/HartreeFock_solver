@@ -365,7 +365,7 @@ uhf(const CGTOs& bfs, const System &system,
     REAL E_conv = 0.;
     REAL Etot_prev = 0.;
     std::cout << boost::format("%4s %17s  %17s  %17s  %17s  %17s\n") % 
-        "Iter" % "Etot(a.u.)" % "dEtot(a.u.)" % "E0(a.u.)" % "RMSDP(a.u.)" % "MAXDP(a.u.)";
+        "Iter" % "Etot(a.u.)" % "E0(a.u.)" % "dE(a.u.)" % "RMSDP(a.u.)" % "MAXDP(a.u.)";
 
     for(size_t i = 0; i < max_iteration; i++) {
 
@@ -423,7 +423,7 @@ uhf(const CGTOs& bfs, const System &system,
 
         // Output current cycle
         std::cout << boost::format("#%3d %17.10f  %17.10f  %+17.10e  %17.10e  %17.10e\n") % 
-            (i+1) % Etot % dE % E0 % (rmsdp_alpha + rmsdp_beta) % std::max(maxdp_alpha, maxdp_beta);
+            (i+1) % Etot % E0 % dE % (rmsdp_alpha + rmsdp_beta) % std::max(maxdp_alpha, maxdp_beta);
 
         if (convergence_flag == true) {
             REAL s_exact = (n_spin/2.)*(n_spin/2. + 1);
