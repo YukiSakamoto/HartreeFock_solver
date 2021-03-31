@@ -205,7 +205,7 @@ void read_input(const std::string input_filename, struct execute_context &params
             std::transform(tokens[1].begin(), tokens[1].end(), std::back_inserter(val) , ::tolower);
 
             if (name == "method") {
-                params.method = "HF";
+                params.method = val;
             } else if(name == "system") {
                 params.geometry_file = val;
             } else if(name == "basis") {
@@ -249,6 +249,7 @@ int main(int argc, char **argv)
     std::cout << boost::format("%-20s %s\n") % "GeometryFile:" % params.geometry_file;
     std::cout << boost::format("%-20s %s\n") % "BasisSetFile:" % params.basisset_file;
     std::cout << boost::format("%-20s %s\n") % "Title:"  % params.title_in_geometry_file;
+    std::cout << boost::format("%-20s %s\n") % "Method:" % params.method;
     std::cout << boost::format("%-20s %d\n") % "NAtom:"  % system.atom_list_.size();
     std::cout << boost::format("%-20s %d\n") % "Charge:" % params.charge;
     std::cout << boost::format("%-20s %d\n") % "NSpin:"  % params.multiplicity;
@@ -268,10 +269,19 @@ int main(int argc, char **argv)
     MOSolver::CGTOs bfs = generate_bfs(system, basis_set);
 
     std::cout << "******************** Enter Calculation *******************" << std::endl;
-    if (system.nspin() == 0) {
+    if (params.method == "hf") {
+        if (system.nspin() == 0) {
+          params.method = "rhf";
+        } else {
+          params.method = "uhf";
+        }
+    }
+    if (params.method == "rhf" ) {
         MOSolver::rhf(bfs,system, params.nconv, params.max_iter);
-    } else {
+    } else if (params.method == "uhf") {
         MOSolver::uhf(bfs,system, params.nconv, params.max_iter);
+    } else {
+        throw;
     }
     return 0;
 }
